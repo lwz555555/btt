@@ -1,4 +1,4 @@
-package com.cc5.btt.Controller;
+package com.cc5.btt.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
