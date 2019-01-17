@@ -1,10 +1,12 @@
 package com.cc5.btt.service;
 
+import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 public interface BaseService<T> {
 
-    int add(int userId, List<T> beanList);
+    Map<String, String> upload(int userId, InputStream is);
 
     int delete(int userId);
 

@@ -40,6 +40,7 @@ public class ExcelReader extends DefaultHandler {
     private boolean isBlankSheet = true;
     // 一行数据的列表
     private Map<Integer, String> rowList = new LinkedHashMap<>();
+    //表头
     private Map<Integer, String> headerIndex = new LinkedHashMap<>();
 
     // 定义一个 List 用来保存所有内容
@@ -76,10 +77,6 @@ public class ExcelReader extends DefaultHandler {
 
     public List<Map<Integer, String>> getRemainRows() {
         return this.remainRows;
-    }
-
-    public Collection<String> getHeaders() {
-        return headerIndex.values();
     }
 
     public Map<Integer, String> getHeaderMap(){
