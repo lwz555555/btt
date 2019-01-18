@@ -1,7 +1,5 @@
 package com.cc5.btt.entity;
 
-import java.util.Date;
-
 public class StepAB {
 
     private int posId;          //门店id
@@ -10,7 +8,7 @@ public class StepAB {
     private int units;          //单位
     private int sales;          //销售额
     private int invQty;         //库存量
-    private Date date;          //日期
+    private String date;          //日期
     private String posProd;     //门店id和产品id组合
 
     public int getPosId() {
@@ -61,11 +59,11 @@ public class StepAB {
         this.invQty = invQty;
     }
 
-    public Date getDate() {
+    public String getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(String date) {
         this.date = date;
     }
 

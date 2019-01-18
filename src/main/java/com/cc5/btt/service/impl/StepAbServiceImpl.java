@@ -96,13 +96,14 @@ public class StepAbServiceImpl implements BaseService<StepAB> {
     //验证数据
     private List<StepAB> checkData(Map<String, String> checkDataMap, List<Map<String, String>> rows){
         List<StepAB> beanList = new ArrayList<>();
-        StringBuffer sb = new StringBuffer();
-        StringBuffer sbColumn = new StringBuffer("字段：");
-        boolean valid = true;
+        StringBuffer sb = new StringBuffer();                   //错误信息
+        StringBuffer sbColumn = new StringBuffer("字段：");      //错误字段
+        boolean valid = true;                                   //所有数据是否通过验证
         for (int i = 0; i < rows.size(); i++){
             StepAB bean = new StepAB();
-            boolean pass = true;
+            boolean pass = true;                                //单行数据是否通过验证
             for(Map.Entry<String, String> entry : rows.get(i).entrySet()){
+                //POS ID(纯数字)
                 if (entry.getKey().equalsIgnoreCase(BTTConstants.stepAbHeaders.get(0))){
                     try {
                         bean.setPosId(Integer.parseInt(entry.getValue()));
@@ -112,42 +113,56 @@ public class StepAbServiceImpl implements BaseService<StepAB> {
                         sbColumn.append(entry.getKey() + "、");
                     }
                 }
+                //Prod Cd("000000-000"格式)
                 if (entry.getKey().equalsIgnoreCase(BTTConstants.stepAbHeaders.get(1))){
-                    bean.setProdCd(entry.getValue());
+                    if (entry.getValue().matches("^\\d{6}-\\d{3}$")){
+                        bean.setProdCd(entry.getValue());
+                    }else {
+                        pass = false;
+                        sbColumn.append(entry.getKey() + "、");
+                    }
                 }
+                //Size
                 if (entry.getKey().equalsIgnoreCase(BTTConstants.stepAbHeaders.get(2))){
                     bean.setSize(entry.getValue());
                 }
+                //Units(把空替换为0，纯数字)
                 if (entry.getKey().equalsIgnoreCase(BTTConstants.stepAbHeaders.get(3))){
                     try {
-                        bean.setUnits(Integer.parseInt(entry.getValue()));
+                        bean.setUnits(Integer.parseInt(StringUtils.isEmpty(entry.getValue()) ? "0" : entry.getValue()));
                     } catch (NumberFormatException e) {
                         log.error("StepAB units format error :" + e.fillInStackTrace());
                         pass = false;
                         sbColumn.append(entry.getKey() + "、");
                     }
                 }
+                //Sales(去货币符号并且去千分位符号，纯数字)
                 if (entry.getKey().equalsIgnoreCase(BTTConstants.stepAbHeaders.get(4))){
+                    String value = StringUtils.isEmpty(entry.getValue()) ? "0" : entry.getValue();
+                    value = StringUtils.replace(value, "￥","");
+                    value = StringUtils.replace(value,",","");
                     try {
-                        bean.setSales(Integer.parseInt(entry.getValue()));
+                        bean.setSales(Integer.parseInt(value));
                     } catch (NumberFormatException e) {
                         log.error("StepAB sales format error :" + e.fillInStackTrace());
                         pass = false;
                         sbColumn.append(entry.getKey() + "、");
                     }
                 }
+                //Inv_Qty(把空替换为0，纯数字)
                 if (entry.getKey().equalsIgnoreCase(BTTConstants.stepAbHeaders.get(5))){
                     try {
-                        bean.setInvQty(Integer.parseInt(entry.getValue()));
+                        bean.setInvQty(Integer.parseInt(StringUtils.isEmpty(entry.getValue()) ? "0" : entry.getValue()));
                     } catch (NumberFormatException e) {
                         log.error("StepAB invQty format error :" + e.fillInStackTrace());
                         pass = false;
                         sbColumn.append(entry.getKey() + "、");
                     }
                 }
+                //Date("yyyy-MM-dd"格式)
                 if (entry.getKey().equalsIgnoreCase(BTTConstants.stepAbHeaders.get(6))){
                     try {
-                        bean.setDate(sdf.parse(entry.getValue()));
+                        bean.setDate(sdf.format(sdf.parse(entry.getValue())));
                     } catch (ParseException e) {
                         log.error("StepAB date conversion error :" + e.fillInStackTrace());
                         pass = false;
@@ -156,6 +171,7 @@ public class StepAbServiceImpl implements BaseService<StepAB> {
                 }
             }
             if (pass){
+                bean.setPosProd(bean.getPosId() + "_" + bean.getProdCd());
                 beanList.add(bean);
             }else {
                 valid = false;
