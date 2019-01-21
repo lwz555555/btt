@@ -9,11 +9,11 @@ public class BTTConstants {
 
     static {
         stepAbHeaders.add("POS ID");
-        stepAbHeaders.add("Prod Cd");
-        stepAbHeaders.add("Size");
-        stepAbHeaders.add("Units");
-        stepAbHeaders.add("Sales");
-        stepAbHeaders.add("Inv_Qty");
-        stepAbHeaders.add("Date");
+        stepAbHeaders.add("PROD CD");
+        stepAbHeaders.add("SIZE");
+        stepAbHeaders.add("UNITS");
+        stepAbHeaders.add("SALES");
+        stepAbHeaders.add("INV_QTY");
+        stepAbHeaders.add("DATE");
     }
 }

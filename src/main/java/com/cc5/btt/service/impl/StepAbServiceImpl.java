@@ -85,18 +85,23 @@ public class StepAbServiceImpl implements BaseService<StepAB> {
     //验证表头
     private Map<String, String> checkHeaders(Map<String, String> checkHeaderMap, Collection<String> headers){
         StringBuffer sb = new StringBuffer("字段：");
-        boolean pass = true;
-        for (String userHeader : headers){
-            for (String definedHeader : BTTConstants.stepAbHeaders){
+        int count = 0;
+        for (String definedHeader : BTTConstants.stepAbHeaders){
+            boolean pass = false;
+            for (String userHeader : headers){
                 if (userHeader.equalsIgnoreCase(definedHeader)){
-                    continue;
+                    pass = true;
+                    count++;
+                    break;
                 }else {
-                    pass = false;
-                    sb.append(definedHeader + ",");
+                    continue;
                 }
             }
+            if (!pass){
+                sb.append(definedHeader + ",");
+            }
         }
-        if (pass){
+        if (count == BTTConstants.stepAbHeaders.size()){
             checkHeaderMap.put("headerCheck", "true");
         }else {
             checkHeaderMap.put("headerCheck", "false");
@@ -125,13 +130,32 @@ public class StepAbServiceImpl implements BaseService<StepAB> {
                         sbColumn.append(entry.getKey() + "、");
                     }
                 }
-                //Prod Cd("000000-000"格式)
+                //Prod Cd("^[a-zA-Z0-9]{6}-[a-zA-Z0-9]{3}"格式)
                 if (entry.getKey().equalsIgnoreCase(BTTConstants.stepAbHeaders.get(1))){
-                    if (entry.getValue().matches("^\\d{6}-\\d{3}$")){
-                        bean.setProdCd(entry.getValue());
+                    String prodCd = entry.getValue();
+                    if (prodCd.matches("^[a-zA-Z0-9]{6}-[a-zA-Z0-9]{3}$")){
+                        bean.setProdCd(prodCd);
                     }else {
-                        pass = false;
-                        sbColumn.append(entry.getKey() + "、");
+                        if (prodCd.length() >= 9){
+                            if (prodCd.contains("-") && prodCd.length() > 9){
+                                if (prodCd.indexOf("-") > 5 && (prodCd.length() - prodCd.indexOf("-")) > 3){
+                                    bean.setProdCd(prodCd.substring(0,6) + "-" + prodCd.substring(prodCd.length()-3));
+                                }else {
+                                    pass = false;
+                                    sbColumn.append(entry.getKey() + "、");
+                                }
+                            }else {
+                                if (prodCd.length() >= 9 && !prodCd.contains("-")){
+                                    bean.setProdCd(prodCd.substring(0,6) + "-" + prodCd.substring(prodCd.length()-3));
+                                }else {
+                                    pass = false;
+                                    sbColumn.append(entry.getKey() + "、");
+                                }
+                            }
+                        }else {
+                            pass = false;
+                            sbColumn.append(entry.getKey() + "、");
+                        }
                     }
                 }
                 //Size

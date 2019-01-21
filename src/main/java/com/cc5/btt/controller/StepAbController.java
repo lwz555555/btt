@@ -23,6 +23,7 @@ public class StepAbController {
     @Resource(name = "stepAbService")
     BaseService<StepAB> stepAbService;
 
+    @RequestMapping("/upload")
     //上传StepAB源文件
     public ResponseBean upload(int userId, MultipartFile file){
         InputStream is = null;
