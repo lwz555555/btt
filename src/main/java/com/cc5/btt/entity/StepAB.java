@@ -2,6 +2,7 @@ package com.cc5.btt.entity;
 
 public class StepAB {
 
+    private int userId;         //用户id
     private int posId;          //门店id
     private String prodCd;      //产品id
     private String size;        //尺码
@@ -10,6 +11,14 @@ public class StepAB {
     private int invQty;         //库存量
     private String date;          //日期
     private String posProd;     //门店id和产品id组合
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
 
     public int getPosId() {
         return posId;

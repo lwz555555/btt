@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.SQLException;
 import java.util.Map;
 
 @RestController
@@ -30,7 +31,13 @@ public class StepAbController {
         } catch (IOException e) {
             log.error("Get InputStream Fail : " + e.fillInStackTrace());
         }
-        Map<String, String> result = stepAbService.upload(userId, is);
+        Map<String, String> result = null;
+        try {
+            result = stepAbService.upload(userId, is);
+        } catch (SQLException e) {
+            log.error("Step AB data upload failed!");
+            return new ResponseBean(false, "上传失败。", "请稍后再试！");
+        }
         if (result.get("result").equals("success")){
             return new ResponseBean(true, "上传成功", null);
         }else {

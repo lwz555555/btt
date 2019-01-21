@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.InputStream;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -27,7 +28,7 @@ public class StepAbServiceImpl implements BaseService<StepAB> {
 
     @Override
     //上传StepAB
-    public Map<String, String> upload(int userId, InputStream is) {
+    public Map<String, String> upload(int userId, InputStream is) throws SQLException {
         Map<String, String> map = new HashMap<>();
         ExcelReader er = new ExcelReader();
         try {
@@ -47,11 +48,22 @@ public class StepAbServiceImpl implements BaseService<StepAB> {
             //验证数据
             Map<String, String> checkDataMap = new HashMap<>(1);
             List<StepAB> strpAbList = checkData(checkDataMap,rows);
-            if (strpAbList.size() == 0){
+            if (strpAbList.size() == 0){                //验证不通过
                 map.put("result","error");
                 map.put("error",checkDataMap.get("dataMessage"));
             }else {
-                stepAbDao.upload(userId, strpAbList);
+                int num = stepAbDao.getNum(userId);     //查询当前用户的数据量
+                if (num == 0 || num == stepAbDao.delete(userId)){
+                    //验证插入条数与源数据是否相等
+                    if (strpAbList.size() != stepAbDao.upload(userId, strpAbList)){
+                        log.error("Number of insert is not equals data rows.");
+                        throw new SQLException();
+                    }
+                    map.put("result", "success");
+                }else {
+                    log.error("Number of delete is not equals former records");
+                    throw new SQLException();
+                }
             }
         }else {
             map.put("result","error");
@@ -171,6 +183,7 @@ public class StepAbServiceImpl implements BaseService<StepAB> {
                 }
             }
             if (pass){
+                //拼接门店id和产品id组合字段
                 bean.setPosProd(bean.getPosId() + "_" + bean.getProdCd());
                 beanList.add(bean);
             }else {
