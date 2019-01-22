@@ -1,6 +1,6 @@
 package com.cc5.btt.dao.impl;
 
-import com.cc5.btt.dao.StepAbDao;
+import com.cc5.btt.dao.DataSourceDao;
 import com.cc5.btt.entity.StepAB;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -9,10 +9,13 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-@Repository("stepAbDao")
-public class StepAbDaoImpl implements StepAbDao{
+@Repository("dataSourceDao")
+public class DataSourceDaoImpl implements DataSourceDao {
 
     private static final Logger log = Logger.getLogger(StepAbDaoImpl.class);
 
@@ -21,7 +24,7 @@ public class StepAbDaoImpl implements StepAbDao{
 
     @Override
     public int getNum(int userId) {
-        String sql = "SELECT COUNT(1) FROM btt.dim_step_ab WHERE user_id = :userId";
+        String sql = "SELECT COUNT(1) FROM btt.dim_data_source WHERE user_id = :userId";
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
                 .addValue("userId", userId);
 
@@ -34,11 +37,10 @@ public class StepAbDaoImpl implements StepAbDao{
         });
     }
 
-
     @Override
     public int insert(int userId, List<StepAB> beanList) {
-        String sql = "INSERT INTO btt.dim_step_ab(user_id, pos_id, prod_cd, `size`, units, sales, inv_qty, `date`, pos_prod, update_time) " +
-                "VALUES(:userId, :posId, :prodCd, :size, :units, :sales, :invQty, :date, :posProd, now())";
+        String sql = "INSERT INTO btt.dim_step_ab(user_id, pos_id, prod_cd, `size`, units, sales, inv_qty, `date`, update_time) " +
+                "VALUES(:userId, :posId, :prodCd, :size, :units, :sales, :invQty, :date, now())";
         Map<String, Object>[] namedParameters = new HashMap[beanList.size()];
         for (int i = 0; i < beanList.size(); i++) {
             StepAB bean = beanList.get(i);
@@ -51,6 +53,7 @@ public class StepAbDaoImpl implements StepAbDao{
             map.put("sales", bean.getSales());
             map.put("invQty", bean.getInvQty());
             map.put("date", bean.getDate());
+            map.put("posProd", bean.getPosProd());
             namedParameters[i] = map;
         }
         return namedParameterJdbcTemplate.batchUpdate(sql, namedParameters).length;
@@ -58,32 +61,33 @@ public class StepAbDaoImpl implements StepAbDao{
 
     @Override
     public int delete(int userId) {
-        String sql = "DELETE FROM btt.dim_step_ab WHERE user_id = :userId";
+        String sql = "DELETE FROM btt.dim_data_source WHERE user_id = :userId";
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
                 .addValue("userId", userId);
         return namedParameterJdbcTemplate.update(sql, sqlParameterSource);
     }
 
+
     @Override
-    public List<String> getPosProdList(int userId) {
-        String sql = "SELECT distinct pos_prod FROM btt.dim_data_source WHERE user_id = :userId";
+    public List<Integer> getPosIdList(int userId) {
+        String sql = "SELECT distinct pos_id FROM btt.dim_data_source WHERE user_id = :userId";
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
                 .addValue("userId", userId);
-        List<String> posProdList = new ArrayList<>();
+        List<Integer> posIdList = new ArrayList<>();
         return namedParameterJdbcTemplate.query(sql, sqlParameterSource, rs -> {
             while (rs.next()) {
-                posProdList.add(rs.getString("pos_prod"));
+                posIdList.add(rs.getInt("pos_id"));
             }
-            return posProdList;
+            return posIdList;
         });
     }
 
     @Override
-    public List<StepAB> getbeanList(int userId, String posProd) {
-        String sql = "SELECT user_id, pos_id, prod_cd, `size`, units, sales, inv_qty, `date`, pos_prod " +
-                "FROM btt.dim_step_ab WHERE user_id = :userId AND pos_prod = :posProd";
+    public List<StepAB> getStepAbData(int userId, String posIds) {
+        String sql = "SELECT user_id, pos_id, prod_cd, `size`, units, sales, inv_qty, `date` " +
+                "FROM btt.dim_data_source WHERE userId = :userId AND pos_id in" + posIds;
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
-                .addValue("userId", userId).addValue("posProd", posProd);
+                .addValue("userId", userId);
         List<StepAB> beanList = new ArrayList<>();
         return namedParameterJdbcTemplate.query(sql, sqlParameterSource, rs -> {
             while (rs.next()) {
@@ -96,11 +100,10 @@ public class StepAbDaoImpl implements StepAbDao{
                 bean.setSales(rs.getInt("sales"));
                 bean.setInvQty(rs.getInt("inv_qty"));
                 bean.setDate(rs.getString("date"));
-                bean.setPosProd(rs.getString("pos_prod"));
+                bean.setPosProd(bean.getPosId() + "_" + bean.getProdCd());
                 beanList.add(bean);
             }
             return beanList;
         });
     }
-
 }
