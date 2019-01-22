@@ -51,6 +51,7 @@ public class StepAbDaoImpl implements StepAbDao{
             map.put("sales", bean.getSales());
             map.put("invQty", bean.getInvQty());
             map.put("date", bean.getDate());
+            map.put("posProd", bean.getPosProd());
             namedParameters[i] = map;
         }
         return namedParameterJdbcTemplate.batchUpdate(sql, namedParameters).length;
@@ -66,7 +67,7 @@ public class StepAbDaoImpl implements StepAbDao{
 
     @Override
     public List<String> getPosProdList(int userId) {
-        String sql = "SELECT distinct pos_prod FROM btt.dim_data_source WHERE user_id = :userId";
+        String sql = "SELECT distinct pos_prod FROM btt.dim_step_ab WHERE user_id = :userId";
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
                 .addValue("userId", userId);
         List<String> posProdList = new ArrayList<>();

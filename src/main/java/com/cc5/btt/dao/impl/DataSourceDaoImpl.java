@@ -39,7 +39,7 @@ public class DataSourceDaoImpl implements DataSourceDao {
 
     @Override
     public int insert(int userId, List<StepAB> beanList) {
-        String sql = "INSERT INTO btt.dim_step_ab(user_id, pos_id, prod_cd, `size`, units, sales, inv_qty, `date`, update_time) " +
+        String sql = "INSERT INTO btt.dim_data_source(user_id, pos_id, prod_cd, `size`, units, sales, inv_qty, `date`, update_time) " +
                 "VALUES(:userId, :posId, :prodCd, :size, :units, :sales, :invQty, :date, now())";
         Map<String, Object>[] namedParameters = new HashMap[beanList.size()];
         for (int i = 0; i < beanList.size(); i++) {
@@ -53,7 +53,6 @@ public class DataSourceDaoImpl implements DataSourceDao {
             map.put("sales", bean.getSales());
             map.put("invQty", bean.getInvQty());
             map.put("date", bean.getDate());
-            map.put("posProd", bean.getPosProd());
             namedParameters[i] = map;
         }
         return namedParameterJdbcTemplate.batchUpdate(sql, namedParameters).length;
@@ -85,7 +84,7 @@ public class DataSourceDaoImpl implements DataSourceDao {
     @Override
     public List<StepAB> getStepAbData(int userId, String posIds) {
         String sql = "SELECT user_id, pos_id, prod_cd, `size`, units, sales, inv_qty, `date` " +
-                "FROM btt.dim_data_source WHERE userId = :userId AND pos_id in" + posIds;
+                "FROM btt.dim_data_source WHERE user_id = :userId AND pos_id in" + posIds;
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
                 .addValue("userId", userId);
         List<StepAB> beanList = new ArrayList<>();
