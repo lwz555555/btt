@@ -13,12 +13,11 @@ import org.springframework.transaction.interceptor.DefaultTransactionAttribute;
 import org.springframework.transaction.interceptor.NameMatchTransactionAttributeSource;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
 
-
-@Aspect
-@Configuration
 /**
  * 全局事务管理配置类
  */
+@Aspect
+@Configuration
 public class TransactionAdviceConfig {
 
     private static final String AOP_POINTCUT_EXPRESSION = "execution (* com.cc5.btt.service.*.*(..))";
