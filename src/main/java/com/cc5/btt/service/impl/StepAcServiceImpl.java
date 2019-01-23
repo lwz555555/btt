@@ -44,6 +44,11 @@ public class StepAcServiceImpl implements StepAcService {
         return 1;
     }
 
+    @Override
+    public Map<String, List<StepAC>> getStepAc(int userId) {
+        return stepAcDao.getStepAc(userId);
+    }
+
 
     private List<StepAC> retainAll (List<StepACDate> stepACDateList, List<StepAB> list) {
         List<StepAC> result = null;

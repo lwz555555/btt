@@ -7,4 +7,5 @@ import java.util.Map;
 
 public interface StepAcDao extends BaseDao<StepAC>{
 
+    Map<String, List<StepAC>> getStepAc (int userId);
 }
