@@ -9,10 +9,8 @@ import com.cc5.btt.service.StepAcService;
 import com.cc5.btt.util.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
+
 
 @Service
 public class StepAcServiceImpl implements StepAcService {
@@ -38,6 +36,7 @@ public class StepAcServiceImpl implements StepAcService {
             }
             dataResult.addAll(newACDateList);
         }
+        stepAcDao.delete(userId);
         int saveRet = stepAcDao.insert(userId, dataResult);
         if (saveRet == 0) {
             return 0;
@@ -103,6 +102,7 @@ public class StepAcServiceImpl implements StepAcService {
         List<StepACDate> newList = null;
         Map<String, Set<Long>> groupMap = new HashMap<>();
         if (acList != null) {
+            //将日期转换为long类型，以便排序
             for (StepAB ab : acList) {
                 if (groupMap.containsKey(ab.getSkuCode())) {
                     Set<Long> set = groupMap.get(ab.getSkuCode());
@@ -122,6 +122,7 @@ public class StepAcServiceImpl implements StepAcService {
                 }
             }
             List<StepACDate> begainList = new ArrayList<>();
+            //取出排序的最大日期和最小日期，给对象赋值
             if (!groupMap.isEmpty()) {
                 for (Map.Entry<String, Set<Long>> entry : groupMap.entrySet()) {
                     Set<Long> set = entry.getValue();
@@ -141,6 +142,7 @@ public class StepAcServiceImpl implements StepAcService {
                     begainList.add(stepACDate);
                 }
             }
+            //获取最小日期和最大日期之间的数据，并赋值
             if (!begainList.isEmpty()) {
                 newList = new ArrayList<>();
                 for (StepACDate stepACDate : begainList) {

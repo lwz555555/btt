@@ -3,7 +3,9 @@ package com.cc5.btt.dao.impl;
 import com.cc5.btt.dao.StepAcDao;
 import com.cc5.btt.entity.StepAC;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
@@ -49,6 +51,9 @@ public class StepAcDaoImpl implements StepAcDao {
 
     @Override
     public int delete(int userId) {
-        return 0;
+        String sql = "DELETE FROM btt.dim_step_ac WHERE user_id = :userId";
+        SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
+                .addValue("userId", userId);
+        return namedParameterJdbcTemplate.update(sql, sqlParameterSource);
     }
 }
