@@ -40,13 +40,13 @@ public class StepAbServiceImpl implements StepAbService {
     //根据 pos_prod 分组（为StepAC输入做准备）
     @Override
     public Map<String, List<StepAB>> getMap(int userId) {
-        List<String> posProdList = stepAbDao.getPosProdList(userId);
-        Map<String, List<StepAB>> map = new LinkedHashMap<>();
-        for(int i = 0; i < posProdList.size(); i++){
-            List<StepAB> beanList = stepAbDao.getbeanList(userId, posProdList.get(i));
-            map.put(posProdList.get(i), beanList);
-        }
-        return map;
+//        List<String> posProdList = stepAbDao.getPosProdList(userId);
+//        Map<String, List<StepAB>> map = new LinkedHashMap<>();
+//        for(int i = 0; i < posProdList.size(); i++){
+//            List<StepAB> beanList = stepAbDao.getbeanList(userId, posProdList.get(i));
+//            map.put(posProdList.get(i), beanList);
+//        }
+        return stepAbDao.getMapList(userId);
     }
 
 }

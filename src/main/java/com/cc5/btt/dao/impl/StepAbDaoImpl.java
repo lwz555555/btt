@@ -80,12 +80,12 @@ public class StepAbDaoImpl implements StepAbDao{
     }
 
     @Override
-    public List<StepAB> getbeanList(int userId, String posProd) {
+    public Map<String, List<StepAB>> getMapList(int userId) {
         String sql = "SELECT user_id, pos_id, prod_cd, `size`, units, sales, inv_qty, `date`, pos_prod " +
-                "FROM btt.dim_step_ab WHERE user_id = :userId AND pos_prod = :posProd";
+                "FROM btt.dim_step_ab WHERE user_id = :userId";
+        Map<String, List<StepAB>> result = new LinkedHashMap<>();
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
-                .addValue("userId", userId).addValue("posProd", posProd);
-        List<StepAB> beanList = new ArrayList<>();
+                .addValue("userId", userId);
         return namedParameterJdbcTemplate.query(sql, sqlParameterSource, rs -> {
             while (rs.next()) {
                 StepAB bean = new StepAB();
@@ -97,10 +97,18 @@ public class StepAbDaoImpl implements StepAbDao{
                 bean.setSales(rs.getInt("sales"));
                 bean.setInvQty(rs.getInt("inv_qty"));
                 bean.setDate(rs.getString("date"));
-                bean.setPosProd(rs.getString("pos_prod"));
-                beanList.add(bean);
+                String key = rs.getString("pos_prod");
+                bean.setPosProd(key);
+                if (result.containsKey(key)) {
+                    List<StepAB> list = result.get(key);
+                    list.add(bean);
+                } else {
+                    List<StepAB> list = new ArrayList<>();
+                    list.add(bean);
+                    result.put(key, list);
+                }
             }
-            return beanList;
+            return result;
         });
     }
 
