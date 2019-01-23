@@ -1,17 +1,17 @@
 package com.cc5.btt.entity;
 
-public class StepAB {
+public class StepAC {
 
     private int userId;         //用户id
     private int posId;          //门店id
     private String prodCd;      //产品id
     private String size;        //尺码
-    private int units;          //单位
-    private int sales;          //销售额
-    private int invQty;         //库存量
+    private Integer units;          //单位
+    private Integer sales;          //销售额
+    private Integer invQty;         //库存量
     private String date;          //日期
-    private String posProd;     //门店id和产品id组合
-    private String skuCode;      //产品id+尺码(过度字段)
+    private String fileName;      //文件名
+    private String skuCode;      //产品id+尺码
 
     public int getUserId() {
         return userId;
@@ -45,27 +45,27 @@ public class StepAB {
         this.size = size;
     }
 
-    public int getUnits() {
+    public Integer getUnits() {
         return units;
     }
 
-    public void setUnits(int units) {
+    public void setUnits(Integer units) {
         this.units = units;
     }
 
-    public int getSales() {
+    public Integer getSales() {
         return sales;
     }
 
-    public void setSales(int sales) {
+    public void setSales(Integer sales) {
         this.sales = sales;
     }
 
-    public int getInvQty() {
+    public Integer getInvQty() {
         return invQty;
     }
 
-    public void setInvQty(int invQty) {
+    public void setInvQty(Integer invQty) {
         this.invQty = invQty;
     }
 
@@ -77,12 +77,12 @@ public class StepAB {
         this.date = date;
     }
 
-    public String getPosProd() {
-        return posProd;
+    public String getFileName() {
+        return fileName;
     }
 
-    public void setPosProd(String posProd) {
-        this.posProd = posProd;
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 
     public String getSkuCode() {

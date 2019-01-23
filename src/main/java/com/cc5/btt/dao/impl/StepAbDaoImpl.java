@@ -91,14 +91,18 @@ public class StepAbDaoImpl implements StepAbDao{
                 StepAB bean = new StepAB();
                 bean.setUserId(rs.getInt("user_id"));
                 bean.setPosId(rs.getInt("pos_id"));
-                bean.setProdCd(rs.getString("prod_cd"));
-                bean.setSize(rs.getString("size"));
+                String prodCd = rs.getString("prod_cd");
+                bean.setProdCd(prodCd);
+                String size = rs.getString("size");
+                bean.setSize(size);
                 bean.setUnits(rs.getInt("units"));
                 bean.setSales(rs.getInt("sales"));
                 bean.setInvQty(rs.getInt("inv_qty"));
                 bean.setDate(rs.getString("date"));
                 String key = rs.getString("pos_prod");
                 bean.setPosProd(key);
+                String skuCode = prodCd + "____" + size;
+                bean.setSkuCode(skuCode);
                 if (result.containsKey(key)) {
                     List<StepAB> list = result.get(key);
                     list.add(bean);
