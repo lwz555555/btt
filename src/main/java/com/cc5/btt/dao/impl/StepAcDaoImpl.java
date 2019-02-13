@@ -59,7 +59,7 @@ public class StepAcDaoImpl implements StepAcDao {
     @Override
     public Map<String, List<StepAC>> getStepAc(int userId) {
         String sql = "SELECT user_id, pos_id, prod_cd, `size`, units, sales, inv_qty, `date`, sku_code, file_name " +
-                "FROM btt.dim_step_ac WHERE user_id = :userId";
+                "FROM btt.dim_step_ac WHERE user_id = :userId GROUP BY pos_id, `date`, sku_code ORDER BY `date`";
         Map<String, List<StepAC>> result = new LinkedHashMap<>();
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
                 .addValue("userId", userId);

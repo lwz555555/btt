@@ -195,4 +195,26 @@ public final class DateUtil {
 		}
 		return result;
 	}
+
+	public static String getWeek (String dataStr) {
+		String[] weekDays = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+		String week = null;
+		try {
+			Date date = YYYY_MM_DD.parse(dataStr);
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(date);
+			int i = calendar.get(Calendar.DAY_OF_WEEK) - 1;
+			if (i < 0) {
+				i = 0;
+			}
+			week = weekDays[i];
+		} catch (Exception e) {
+
+		}
+		return week;
+	}
+
+	public static void main(String[] args) {
+		System.out.println(getWeek("2019-02-28"));
+	}
 }

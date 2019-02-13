@@ -12,6 +12,8 @@ public class StepAC {
     private String date;          //日期
     private String fileName;      //文件名
     private String skuCode;      //产品id+尺码
+    private String dayInWeek;    //当前日期是周几
+    private Integer recId;       //recId
 
     public int getUserId() {
         return userId;
@@ -91,5 +93,13 @@ public class StepAC {
 
     public void setSkuCode(String skuCode) {
         this.skuCode = skuCode;
+    }
+
+    public String getDayInWeek() {
+        return dayInWeek;
+    }
+
+    public void setDayInWeek(String dayInWeek) {
+        this.dayInWeek = dayInWeek;
     }
 }
