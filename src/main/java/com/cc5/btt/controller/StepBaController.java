@@ -2,17 +2,24 @@ package com.cc5.btt.controller;
 
 import com.cc5.btt.bean.ResponseBean;
 import com.cc5.btt.service.StepBaService;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
+
+@RestController
+@RequestMapping("/stepba")
 public class StepBaController {
+
+    private static final Logger log = Logger.getLogger(StepBaController.class);
 
     @Autowired
     private StepBaService stepBaService;
 
 
-    @RequestMapping(value = "/runStepAc", method = {RequestMethod.POST})
+    @RequestMapping(value = "/runStepBa", method = {RequestMethod.POST})
     public ResponseBean runBaStep (int userId) {
         int ret = stepBaService.runBaStep(userId);
         if (ret == 1) {

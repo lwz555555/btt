@@ -214,6 +214,29 @@ public final class DateUtil {
 		return week;
 	}
 
+
+	/**
+	 * 根据一个日期和相差天数，得出另一个日期
+	 * @param dataStr
+	 * @param day
+	 * @return
+	 */
+	public static String getFixedDate (String dataStr, int day) {
+		try {
+			Calendar calendar = new GregorianCalendar();
+			Date date = YYYY_MM_DD.parse(dataStr);
+			calendar.setTime(date);
+			//day如果是正数则是增加，负数则减少
+			calendar.add(Calendar.DATE, day);
+			date = calendar.getTime();
+			String newDate = YYYY_MM_DD.format(date);
+			return newDate;
+		} catch (Exception e) {
+			e.fillInStackTrace();
+			return null;
+		}
+	}
+
 	public static void main(String[] args) {
 		System.out.println(getWeek("2019-02-28"));
 	}

@@ -2,6 +2,8 @@ package com.cc5.btt.entity;
 
 public class StepAC {
 
+
+    private int id;             //索引id
     private int userId;         //用户id
     private int posId;          //门店id
     private String prodCd;      //产品id
@@ -14,7 +16,22 @@ public class StepAC {
     private String skuCode;      //产品id+尺码
     private String dayInWeek;    //当前日期是周几
     private Integer recId;       //recId
+    private String minDate;      //最小日期 （中间字段）
+    private String maxDate;      //最大日期 （中间字段）
 
+
+    public int getId() {
+        return id;
+    }
+    public void setId(int id) {
+        this.id = id;
+    }
+    public Integer getRecId() {
+        return recId;
+    }
+    public void setRecId(Integer recId) {
+        this.recId = recId;
+    }
     public int getUserId() {
         return userId;
     }
@@ -101,5 +118,21 @@ public class StepAC {
 
     public void setDayInWeek(String dayInWeek) {
         this.dayInWeek = dayInWeek;
+    }
+
+    public String getMinDate() {
+        return minDate;
+    }
+
+    public void setMinDate(String minDate) {
+        this.minDate = minDate;
+    }
+
+    public String getMaxDate() {
+        return maxDate;
+    }
+
+    public void setMaxDate(String maxDate) {
+        this.maxDate = maxDate;
     }
 }
