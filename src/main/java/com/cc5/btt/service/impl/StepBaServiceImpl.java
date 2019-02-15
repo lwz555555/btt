@@ -29,6 +29,9 @@ public class StepBaServiceImpl implements StepBaService {
         if (!stepBaPart1Map.isEmpty()) {
             for (Map.Entry<String, List<StepAC>> entry : stepBaPart1Map.entrySet()) {
                 String key = entry.getKey();
+                if ("136307_325213-802".equals(key)) {
+                    int a = 3;
+                }
                 List<StepAC> part1List = entry.getValue();
                 Integer posId = part1List.get(0).getPosId();
                 Set<String> sizeSet = new HashSet<>();
@@ -65,7 +68,6 @@ public class StepBaServiceImpl implements StepBaService {
                 List<String> keyList = new ArrayList<>();
                 for (Map.Entry<String, List<StepAC>> entry1 : groupMap.entrySet()) {
                     List<StepAC> list = entry1.getValue();
-                    sortList.add(list.size());
                     keyList.add(entry1.getKey());
                     //排序
                     Collections.sort(list, new Comparator<StepAC>() {
@@ -96,6 +98,7 @@ public class StepBaServiceImpl implements StepBaService {
                             break;
                         }
                     }
+                    sortList.add(list.size());
                 }
                 Collections.sort(sortList);
                 for (int i = 0; i < sortList.get(sortList.size() - 1); i++) {
@@ -108,7 +111,7 @@ public class StepBaServiceImpl implements StepBaService {
                         stepBA.setFileName(key);
                         stepBA.setPosId(posId);
                         stepBA.setUserId(userId);
-                        stepBA.setName(key.substring(key.length()-9) + "____" + str);
+                        stepBA.setName(key.substring(key.length()-10) + "____" + str);
                         try {
                             stepBA.setValue(groupMap.get(str).get(i).getUnits());
                         } catch (Exception e) {
@@ -172,7 +175,7 @@ public class StepBaServiceImpl implements StepBaService {
 
             for (StepAC stepAC : stepACSet) {
                 int day = -7;
-                for (int i = 1; i < 7; i++) {
+                for (int i = 1; i < 8; i++) {
                     StepAC stepAC1 = new StepAC();
                     stepAC1.setSkuCode(stepAC.getSkuCode());
                     stepAC1.setMinDate(stepAC.getMinDate());
@@ -191,7 +194,7 @@ public class StepBaServiceImpl implements StepBaService {
                     stepAC1.setUnits(0);
                     stepAC1.setSize(stepAC.getSize());
                     part2NewList.add(stepAC1);
-                    day = day + i;
+                    day = day + 1;
                 }
                 String week = DateUtil.getWeek(stepAC.getDate());
                 if ("Monday".equals(week)) {
