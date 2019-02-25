@@ -1,0 +1,137 @@
+package com.cc5.btt.dao.impl;
+
+import com.cc5.btt.dao.StepBdDao;
+import com.cc5.btt.entity.StepBD;
+import org.apache.log4j.Logger;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.stereotype.Repository;
+
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Repository("stepBdDao")
+public class StepBdDaoImpl  implements StepBdDao {
+
+    private static final Logger log = Logger.getLogger(StepAbDaoImpl.class);
+
+    @Resource
+    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+    @Override
+    public int getNum(int userId) {
+        String sql = "SELECT COUNT(1) FROM btt.dim_step_bd WHERE user_id = :userId";
+        SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
+                .addValue("userId", userId);
+        return namedParameterJdbcTemplate.query(sql, sqlParameterSource, rs -> {
+            if (rs.next()) {
+                return rs.getInt(1);
+            } else {
+                return 0;
+            }
+        });
+    }
+
+    /**
+     * 把BD步骤的结果插入数据库
+     * @param userId 用户id
+     * @param beanList StepBD对象列表
+     * @return
+     */
+    @Override
+    public int insert(int userId, List<StepBD> beanList) {
+        String sql = "INSERT INTO btt.dim_step_bd(user_id, size_code, start_inv, sum_qty, first_4weeks_sale_qty, prod_cd, update_time) " +
+                "VALUES(:userId, :sizeCode, :startInv, :sumQty, :first4WeeksSaleQty, :prodCd, now())";
+        Map<String, Object>[] namedParameters = new HashMap[beanList.size()];
+        for (int i = 0; i < beanList.size(); i++) {
+            StepBD bd = beanList.get(i);
+            Map<String, Object> map = new HashMap<>();
+            map.put("userId", userId);
+            map.put("sizeCode", bd.getSizeCode());
+            map.put("startInv", bd.getStartInv());
+            map.put("sumQty", bd.getSumQty());
+            map.put("first4WeeksSaleQty", bd.getFirst4WeeksSaleQty());
+            map.put("prodCd", bd.getProdCd());
+            namedParameters[i] = map;
+        }
+        return namedParameterJdbcTemplate.batchUpdate(sql, namedParameters).length;
+    }
+
+    /**
+     * 删除用户的老数据
+     * @param userId 用户id
+     * @return
+     */
+    @Override
+    public int delete(int userId) {
+        String sql = "DELETE btt.dim_step_bd WHERE user_id = :userId";
+        SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
+                .addValue("userId", userId);
+        return namedParameterJdbcTemplate.update(sql, sqlParameterSource);
+    }
+
+    /**
+     * BD步骤结果集
+     * @param userId 用户id
+     * @return List<StepBD>
+     */
+    @Override
+    public List<StepBD> getBdResult(int userId, List<String> prodCdList) {
+        String sql = "SELECT size_code, start_inv, sum_sal_qty, " +
+                "sum_first4wks_sal_qty, LEFT(size_code,10) prod_cd " +
+                "FROM btt.dim_step_bc WHERE user_id = :userId";
+        SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
+                .addValue("userId", userId);
+        List<StepBD> bdList = new ArrayList<>();
+        return namedParameterJdbcTemplate.query(sql, sqlParameterSource, rs -> {
+            while (rs.next()) {
+                String prodCd = rs.getString("prod_cd");
+                if (prodCdList.contains(prodCd)){
+                    StepBD bd = new StepBD();
+                    bd.setUserId(userId);
+                    bd.setSizeCode(rs.getString("size_code"));
+                    bd.setStartInv(rs.getInt("start_inv"));
+                    bd.setSumQty(rs.getInt("sum_sal_qty"));
+                    bd.setFirst4WeeksSaleQty(rs.getInt("sum_first4wks_sal_qty"));
+                    bd.setProdCd(prodCd);
+                    bdList.add(bd);
+                }
+            }
+            return bdList;
+        });
+    }
+
+    /**
+     * 得到BD步骤中的小步骤10(Record ID 55)的结果
+     * @param userId 用户id
+     * @return
+     */
+    @Override
+    public List<Map<String, Object>> getStep10(int userId) {
+        String sql = "SELECT prod_cd, SUM(sum_sal_qty) sum_sum_qty FROM " +
+                        "(SELECT LEFT(size_code,10) prod_cd, start_inv, " +
+                            "sum_sal_qty, sum_first4wks_sal_qty " +
+                        "FROM btt.dim_step_bc WHERE user_id = :userId " +
+                            "AND sum_sal_qty > 0) a " +
+                    "GROUP BY prod_cd ORDER BY sum_sum_qty DESC";
+        SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
+                .addValue("userId", userId);
+        List<Map<String, Object>> result = new ArrayList<>();
+        return namedParameterJdbcTemplate.query(sql, sqlParameterSource, rs -> {
+            int recordId = 1;
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>(3);
+                row.put("recordId", recordId);
+                row.put("prodCd", rs.getString(1));
+                row.put("sumSumQty", rs.getInt(2));
+                result.add(row);
+                recordId++;
+            }
+            return result;
+        });
+    }
+}
