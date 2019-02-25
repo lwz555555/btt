@@ -1,31 +1,28 @@
 package com.cc5.btt.service.impl;
 
 import com.cc5.btt.dao.StepAcDao;
-import com.cc5.btt.dao.StepBaDao;
 import com.cc5.btt.entity.StepAC;
-import com.cc5.btt.entity.StepBA;
-import com.cc5.btt.service.StepBaService;
+import com.cc5.btt.entity.StepBC;
+import com.cc5.btt.service.StepBcService;
 import com.cc5.btt.util.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 @Service
-public class StepBaServiceImpl implements StepBaService {
+public class StepBcServiceImpl implements StepBcService {
 
     @Autowired
     private StepAcDao stepAcDao;
-    @Autowired
-    private StepBaDao stepBaDao;
 
     @Override
-    public int runBaStep(int userId) {
+    public int runBcStep(int userId) {
+        List<StepBC> stepBCList = new ArrayList<>();
         Map<String, List<StepAC>> stepBaPart1Map = stepAcDao.getStepAc(userId);
         Map<String, List<StepAC>> groupByMap = stepAcDao.getGroupByCodeSize(userId);
         Map<String, List<String>> minDateMap = new HashMap<>();
-        List<StepBA> stepBAList = new ArrayList<>();
         if (!stepBaPart1Map.isEmpty()) {
             for (Map.Entry<String, List<StepAC>> entry : stepBaPart1Map.entrySet()) {
                 String key = entry.getKey();
@@ -53,7 +50,7 @@ public class StepBaServiceImpl implements StepBaService {
                         }
                     }
                 }
-                List<StepAC> stepBaPart2List = handlePart2List (groupByMap, minDateMap, key);
+                List<StepAC> stepBaPart2List = handlePart2List (groupByMap, minDateMap, key, part1List);
                 if (stepBaPart2List == null) {
                     return 0;
                 }
@@ -61,7 +58,7 @@ public class StepBaServiceImpl implements StepBaService {
                 //分组
                 Map<String, List<StepAC>> groupMap = part1List.stream().collect(
                         Collectors.groupingBy(StepAC :: getSize));
-                List<Integer> sortList = new ArrayList<>();
+                List<StepAC> sortList = new ArrayList<>();
                 List<String> keyList = new ArrayList<>();
                 for (Map.Entry<String, List<StepAC>> entry1 : groupMap.entrySet()) {
                     List<StepAC> list = entry1.getValue();
@@ -84,56 +81,85 @@ public class StepBaServiceImpl implements StepBaService {
                             return -1;
                         }
                     });
+                    int a = 1;
+                    boolean b = false;
                     for (int j = 0; j < list.size(); j++) {
                         StepAC stepAC = list.get(j);
-                        if (stepAC.getRecId() == null) {
-                            list.remove(j);
-                            j--;
+                        if (stepAC.getRecId() == null && !b) {
                             continue;
                         }
                         if (1 == stepAC.getRecId()) {
-                            break;
+                            b = true;
+                            continue;
+                        }
+                        if (stepAC.getRecId() == null) {
+                            stepAC.setRecId(a++);
                         }
                     }
-                    sortList.add(list.size());
+                    sortList.addAll(list);
                 }
-                Collections.sort(sortList);
-                for (int i = 0; i < sortList.get(sortList.size() - 1); i++) {
-                    if (i > 90) {
-                        break;
+                List<StepBC> partOneList = new ArrayList<>();
+                List<StepAC> partTwoList = new ArrayList<>();
+                List<StepAC> partThreeList = new ArrayList<>();
+                for (int i = 0; i < sortList.size(); i++) {
+                    StepAC stepAC = sortList.get(i);
+                    Integer recId = stepAC.getRecId();
+                    if (i > 0 && i+1 <= sortList.size()) {
+                        sortList.get(i+1).setInitialInv(stepAC.getInvQty());
                     }
-                    for (String str : keyList) {
-                        StepBA stepBA = new StepBA();
-                        stepBA.setRecId(i+1);
-                        stepBA.setFileName(key);
-                        stepBA.setPosId(posId);
-                        stepBA.setUserId(userId);
-                        stepBA.setName(key.substring(key.length()-10) + "____" + str);
-                        try {
-                            stepBA.setValue(groupMap.get(str).get(i).getUnits());
-                        } catch (Exception e) {
+                    if (recId == 1) {
+                        StepBC stepBC = new StepBC();
+                        stepBC.setPosId(posId);
+                        stepBC.setSizeCode(stepAC.getSkuCode());
+                        stepBC.setUserId(userId);
+                        stepBC.setStartInv(stepAC.getInitialInv());
+                        partOneList.add(stepBC);
+                        partTwoList.add(stepAC);
+                        partThreeList.add(stepAC);
+                    }
+                    if (recId != null && recId > 1
+                            && recId <= 14) {
+                        partTwoList.add(stepAC);
+                        partThreeList.add(stepAC);
+                    }
+                    if (recId != null && recId > 14
+                        && recId <= 91) {
+                        partTwoList.add(stepAC);
+                    }
+                }
+                integrationPartData (partOneList, partTwoList, partThreeList);
+                stepBCList.addAll(partOneList);
+            }
 
-                        }
-                        stepBAList.add(stepBA);
-                    }
-                }
-            }
-        }
-        try {
-            stepBaDao.delete(userId);
-            int ret = stepBaDao.insert(userId, stepBAList);
-            if (ret > 0) {
-                return 1;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         return 0;
     }
 
 
+    private void integrationPartData (List<StepBC> partOneList, List<StepAC> partTwoList,
+                                      List<StepAC> partThreeList) {
+        Map<String, List<StepAC>> partTwoMap = partTwoList.stream().collect(
+                Collectors.groupingBy(StepAC :: getSkuCode));
+        Map<String, List<StepAC>> partThreeMap = partThreeList.stream().collect(
+                Collectors.groupingBy(StepAC :: getSkuCode));
+        for (StepBC stepBC : partOneList) {
+            String sizeCode = stepBC.getSizeCode();
+            Integer sumSalQty = partTwoMap.get(sizeCode).stream().mapToInt(StepAC::getUnits).sum();
+            stepBC.setSumSalQty(sumSalQty);
+            Integer sumFrist4wksSalQty = partThreeMap.get(sizeCode).stream().mapToInt(StepAC::getUnits).sum();
+            stepBC.setSumFrist4wksSalQty(sumFrist4wksSalQty);
+            if (stepBC.getStartInv() == null || stepBC.getStartInv() == 0) {
+                stepBC.setStartInv(stepBC.getSumFrist4wksSalQty());
+            }
+            if (stepBC.getStartInv() == 0) {
+                stepBC.setStartInv(1);
+            }
+        }
+    }
+
+
     private List<StepAC> handlePart2List (Map<String, List<StepAC>> groupByMap, Map<String, List<String>> minDateMap,
-                                          String key) {
+                                          String key, List<StepAC> part1List) {
         List<StepAC> part2NewList = new ArrayList<>();
         if (!groupByMap.isEmpty()) {
             List<StepAC> stepACSet = groupByMap.get(key);
@@ -148,57 +174,21 @@ public class StepBaServiceImpl implements StepBaService {
                                     stepACSet.remove(stepAC);
                                     i--;
                                     continue;
-                                } else {
-                                    stepAC.setMaxDate(stepAC.getDate());
-                                    String minDate = DateUtil.getFixedDate(stepAC.getDate(), -7);
-                                    if (minDate == null) return null;
-                                    stepAC.setMinDate(minDate);
                                 }
                             }
                         }
                     }
                 }
-            } else {
-                if (stepACSet != null && !stepACSet.isEmpty()) {
-                    for (int i = 0; i < stepACSet.size(); i++) {
-                        StepAC stepAC = stepACSet.get(i);
-                        stepAC.setMaxDate(stepAC.getDate());
-                        String minDate = DateUtil.getFixedDate(stepAC.getDate(), -7);
-                        if (minDate == null) return null;
-                        stepAC.setMinDate(minDate);
-                    }
-                }
             }
-
-            for (StepAC stepAC : stepACSet) {
-                int day = -7;
-                for (int i = 1; i < 8; i++) {
-                    StepAC stepAC1 = new StepAC();
-                    stepAC1.setSkuCode(stepAC.getSkuCode());
-                    stepAC1.setMinDate(stepAC.getMinDate());
-                    stepAC1.setMaxDate(stepAC.getMaxDate());
-                    String date = DateUtil.getFixedDate(stepAC.getMaxDate(), day);
-                    if (date == null) return null;
-                    String week = DateUtil.getWeek(date);
-                    stepAC1.setDayInWeek(week);
-                    if ("Monday".equals(week)) {
-                        stepAC1.setRecId(1);
+            if (!stepACSet.isEmpty()) {
+                for (StepAC stepAC : stepACSet) {
+                    for (StepAC stepAC1 : part1List) {
+                        if (stepAC.getSize().equals(stepAC1.getSize())) {
+                            stepAC1.setRecId(1);
+                            part2NewList.add(stepAC1);
+                        }
                     }
-                    stepAC1.setDate(date);
-                    stepAC1.setProdCd(stepAC.getProdCd());
-                    stepAC1.setPosId(stepAC.getPosId());
-                    stepAC1.setFileName(stepAC.getFileName());
-                    stepAC1.setUnits(0);
-                    stepAC1.setSize(stepAC.getSize());
-                    part2NewList.add(stepAC1);
-                    day = day + 1;
                 }
-                String week = DateUtil.getWeek(stepAC.getDate());
-                if ("Monday".equals(week)) {
-                    stepAC.setRecId(1);
-                }
-                stepAC.setUnits(1);
-                part2NewList.add(stepAC);
             }
         }
         return part2NewList;

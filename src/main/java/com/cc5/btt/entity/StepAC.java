@@ -18,6 +18,7 @@ public class StepAC {
     private Integer recId;       //recId
     private String minDate;      //最小日期 （中间字段）
     private String maxDate;      //最大日期 （中间字段）
+    private Integer initialInv;     //初始库存
 
 
     public int getId() {
@@ -134,5 +135,13 @@ public class StepAC {
 
     public void setMaxDate(String maxDate) {
         this.maxDate = maxDate;
+    }
+
+    public Integer getInitialInv() {
+        return initialInv;
+    }
+
+    public void setInitialInv(Integer initialInv) {
+        this.initialInv = initialInv;
     }
 }

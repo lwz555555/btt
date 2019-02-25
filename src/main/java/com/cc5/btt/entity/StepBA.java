@@ -7,7 +7,7 @@ public class StepBA {
     private String fileName;    //文件名
     private int posId;          //产品id
     private String name;
-    private int value;
+    private Integer value;
 
     public int getUserId() {
         return userId;
@@ -49,11 +49,11 @@ public class StepBA {
         this.name = name;
     }
 
-    public int getValue() {
+    public Integer getValue() {
         return value;
     }
 
-    public void setValue(int value) {
+    public void setValue(Integer value) {
         this.value = value;
     }
 }
