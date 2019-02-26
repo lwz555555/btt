@@ -12,5 +12,7 @@ public interface StepAcDao extends BaseDao<StepAC>{
 
     Map<String, List<StepAC>> getGroupByCodeSize (int userId);
 
+    Map<String, List<StepAC>> getNullStepAc (int userId);
+
 
 }

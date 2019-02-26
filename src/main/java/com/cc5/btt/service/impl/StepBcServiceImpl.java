@@ -1,10 +1,12 @@
 package com.cc5.btt.service.impl;
 
 import com.cc5.btt.dao.StepAcDao;
+import com.cc5.btt.dao.StepBcDao;
 import com.cc5.btt.entity.StepAC;
 import com.cc5.btt.entity.StepBC;
 import com.cc5.btt.service.StepBcService;
 import com.cc5.btt.util.DateUtil;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,11 +18,13 @@ public class StepBcServiceImpl implements StepBcService {
 
     @Autowired
     private StepAcDao stepAcDao;
+    @Autowired
+    private StepBcDao stepBcDao;
 
     @Override
     public int runBcStep(int userId) {
         List<StepBC> stepBCList = new ArrayList<>();
-        Map<String, List<StepAC>> stepBaPart1Map = stepAcDao.getStepAc(userId);
+        Map<String, List<StepAC>> stepBaPart1Map = stepAcDao.getNullStepAc(userId);
         Map<String, List<StepAC>> groupByMap = stepAcDao.getGroupByCodeSize(userId);
         Map<String, List<String>> minDateMap = new HashMap<>();
         if (!stepBaPart1Map.isEmpty()) {
@@ -31,6 +35,9 @@ public class StepBcServiceImpl implements StepBcService {
                 Set<String> sizeSet = new HashSet<>();
                 if (part1List != null) {
                     for (StepAC stepAC : part1List) {
+                        if (stepAC.getUnits() < 0) {
+                            stepAC.setUnits(0);
+                        }
                         String week = DateUtil.getWeek(stepAC.getDate());
                         if (week == null) {
                             return 0;
@@ -75,7 +82,12 @@ public class StepBcServiceImpl implements StepBcService {
                             if (o1Time > o2Time) {
                                 return 1;
                             }
-                            if (o1Time == o2Time) {
+                            if (o1Time == o2Time && o1.getRecId() == 1) {
+                                return 1;
+                            } else if (o1Time == o2Time && o2.getRecId() == 1) {
+                                return -1;
+                            } else if (o1Time == o2Time && o2.getRecId() == null
+                                && o1.getRecId() == null) {
                                 return 0;
                             }
                             return -1;
@@ -88,32 +100,60 @@ public class StepBcServiceImpl implements StepBcService {
                         if (stepAC.getRecId() == null && !b) {
                             continue;
                         }
-                        if (1 == stepAC.getRecId()) {
+                        if (stepAC.getRecId() != null && 1 == stepAC.getRecId()) {
                             b = true;
                             continue;
                         }
                         if (stepAC.getRecId() == null) {
-                            stepAC.setRecId(a++);
+                            a++;
+                            stepAC.setRecId(a);
                         }
                     }
-                    sortList.addAll(list);
+                }
+                sortSize (keyList);
+                for (String str : keyList) {
+                    sortList.addAll(groupMap.get(str));
                 }
                 List<StepBC> partOneList = new ArrayList<>();
                 List<StepAC> partTwoList = new ArrayList<>();
                 List<StepAC> partThreeList = new ArrayList<>();
+                Map<String, Map<String, String>> recordMap = new HashMap<>();
                 for (int i = 0; i < sortList.size(); i++) {
                     StepAC stepAC = sortList.get(i);
                     Integer recId = stepAC.getRecId();
-                    if (i > 0 && i+1 <= sortList.size()) {
-                        sortList.get(i+1).setInitialInv(stepAC.getInvQty());
+                    String sizeCode = stepAC.getSkuCode();
+                    if (i > 0 && i < sortList.size()) {
+                        stepAC.setInitialInv(sortList.get(i-1).getInvQty());
                     }
-                    if (recId == 1) {
-                        StepBC stepBC = new StepBC();
-                        stepBC.setPosId(posId);
-                        stepBC.setSizeCode(stepAC.getSkuCode());
-                        stepBC.setUserId(userId);
-                        stepBC.setStartInv(stepAC.getInitialInv());
-                        partOneList.add(stepBC);
+                    Integer initialInv = stepAC.getInitialInv();
+                    String initialInvString = "";
+                    if (initialInv == null) {
+                        initialInvString = "null";
+                    } else {
+                        initialInvString = initialInv + "";
+                    }
+                    if (recId != null && recId == 1) {
+                       if (!recordMap.containsKey(sizeCode)) {
+                           Map<String, String> map = new HashMap<>();
+                           map.put(initialInvString, initialInvString);
+                           recordMap.put(sizeCode, map);
+                           StepBC stepBC = new StepBC();
+                           stepBC.setPosId(posId);
+                           stepBC.setSizeCode(stepAC.getSkuCode());
+                           stepBC.setUserId(userId);
+                           stepBC.setStartInv(stepAC.getInitialInv());
+                           partOneList.add(stepBC);
+                        } else if (recordMap.containsKey(sizeCode)
+                               && !recordMap.get(sizeCode).containsKey(initialInvString)) {
+                           Map<String, String> map = recordMap.get(sizeCode);
+                           map.put(initialInvString, initialInvString);
+                           StepBC stepBC = new StepBC();
+                           stepBC.setPosId(posId);
+                           stepBC.setSizeCode(stepAC.getSkuCode());
+                           stepBC.setUserId(userId);
+                           stepBC.setStartInv(stepAC.getInitialInv());
+                           partOneList.add(stepBC);
+                       }
                         partTwoList.add(stepAC);
                         partThreeList.add(stepAC);
                     }
@@ -130,10 +170,39 @@ public class StepBcServiceImpl implements StepBcService {
                 integrationPartData (partOneList, partTwoList, partThreeList);
                 stepBCList.addAll(partOneList);
             }
-
+            try {
+                stepBcDao.delete(userId);
+                int ret = stepBcDao.insert(userId, stepBCList);
+                if (ret > 0) {
+                    return 1;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         return 0;
     }
+
+
+    private void sortSize (List<String> keyList) {
+        if (!keyList.isEmpty()) {
+            Collections.sort(keyList, new Comparator<String>() {
+                @Override
+                public int compare(String o1, String o2) {
+                    char char1 = o1.charAt(0);
+                    char char2 = o2.charAt(0);
+                    if (char1 > char2) {
+                        return 1;
+                    }
+                    if (char1 == char2) {
+                        return 0;
+                    }
+                    return -1;
+                }
+            });
+        }
+    }
+
 
 
     private void integrationPartData (List<StepBC> partOneList, List<StepAC> partTwoList,
@@ -180,12 +249,14 @@ public class StepBcServiceImpl implements StepBcService {
                     }
                 }
             }
-            if (!stepACSet.isEmpty()) {
+            if (stepACSet != null && !stepACSet.isEmpty()) {
                 for (StepAC stepAC : stepACSet) {
                     for (StepAC stepAC1 : part1List) {
                         if (stepAC.getSize().equals(stepAC1.getSize())) {
-                            stepAC1.setRecId(1);
-                            part2NewList.add(stepAC1);
+                            StepAC copyStepAC = new StepAC();
+                            BeanUtils.copyProperties(stepAC1, copyStepAC);
+                            copyStepAC.setRecId(1);
+                            part2NewList.add(copyStepAC);
                         }
                     }
                 }

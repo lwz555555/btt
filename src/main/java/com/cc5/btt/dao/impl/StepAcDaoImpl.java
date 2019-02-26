@@ -126,4 +126,40 @@ public class StepAcDaoImpl implements StepAcDao {
             return result;
         });
     }
+
+    @Override
+    public Map<String, List<StepAC>> getNullStepAc(int userId) {
+        String sql = "SELECT id, user_id, pos_id, prod_cd, `size`, units, sales, inv_qty, `date`, sku_code, file_name " +
+                "FROM btt.dim_step_ac WHERE user_id = :userId GROUP BY sku_code,`date`, pos_id, file_name";
+        Map<String, List<StepAC>> result = new LinkedHashMap<>();
+        SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
+                .addValue("userId", userId);
+        return namedParameterJdbcTemplate.query(sql, sqlParameterSource, rs -> {
+            while (rs.next()) {
+                StepAC bean = new StepAC();
+                bean.setId(rs.getInt("id"));
+                bean.setUserId(rs.getInt("user_id"));
+                bean.setPosId(rs.getInt("pos_id"));
+                String prodCd = rs.getString("prod_cd");
+                bean.setProdCd(prodCd);
+                String size = rs.getString("size");
+                bean.setSize(size);
+                bean.setUnits(rs.getInt("units"));
+                bean.setSales(rs.getInt("sales"));
+                bean.setInvQty(rs.getString(8) == null ? null : rs.getInt("inv_qty"));
+                bean.setDate(rs.getString("date"));
+                bean.setSkuCode(rs.getString("sku_code"));
+                String key = rs.getString("file_name");
+                if (result.containsKey(key)) {
+                    List<StepAC> list = result.get(key);
+                    list.add(bean);
+                } else {
+                    List<StepAC> list = new ArrayList<>();
+                    list.add(bean);
+                    result.put(key, list);
+                }
+            }
+            return result;
+        });
+    }
 }
