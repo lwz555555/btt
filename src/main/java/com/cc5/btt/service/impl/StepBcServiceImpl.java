@@ -216,9 +216,9 @@ public class StepBcServiceImpl implements StepBcService {
             Integer sumSalQty = partTwoMap.get(sizeCode).stream().mapToInt(StepAC::getUnits).sum();
             stepBC.setSumSalQty(sumSalQty);
             Integer sumFrist4wksSalQty = partThreeMap.get(sizeCode).stream().mapToInt(StepAC::getUnits).sum();
-            stepBC.setSumFrist4wksSalQty(sumFrist4wksSalQty);
+            stepBC.setSumFirst4wksSalQty(sumFrist4wksSalQty);
             if (stepBC.getStartInv() == null || stepBC.getStartInv() == 0) {
-                stepBC.setStartInv(stepBC.getSumFrist4wksSalQty());
+                stepBC.setStartInv(stepBC.getSumFirst4wksSalQty());
             }
             if (stepBC.getStartInv() == 0) {
                 stepBC.setStartInv(1);

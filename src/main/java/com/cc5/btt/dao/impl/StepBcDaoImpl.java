@@ -26,9 +26,9 @@ public class StepBcDaoImpl implements StepBcDao {
     @Override
     public int insert(int userId, List<StepBC> beanList) {
         String sql = "INSERT INTO btt.dim_step_bc (user_id, pos_id, size_code, start_inv, sum_sal_qty, " +
-                "frist4wks_sal_qty, update_time) " +
+                "first4wks_sal_qty, update_time) " +
                 "VALUES(:userId, :posId, :sizeCode, :startInv, :sumSalQty, " +
-                ":sumFrist4wksSalQty, now())";
+                ":sumFirst4wksSalQty, now())";
         Map<String, Object>[] namedParameters = new HashMap[beanList.size()];
         for (int i = 0; i < beanList.size(); i++) {
             StepBC bean = beanList.get(i);
@@ -38,7 +38,7 @@ public class StepBcDaoImpl implements StepBcDao {
             map.put("sizeCode", bean.getSizeCode());
             map.put("startInv", bean.getStartInv());
             map.put("sumSalQty", bean.getSumSalQty());
-            map.put("sumFrist4wksSalQty", bean.getSumFrist4wksSalQty());
+            map.put("sumFirst4wksSalQty", bean.getSumFirst4wksSalQty());
             namedParameters[i] = map;
         }
         return namedParameterJdbcTemplate.batchUpdate(sql, namedParameters).length;

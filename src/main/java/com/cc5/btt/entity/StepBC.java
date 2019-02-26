@@ -6,7 +6,7 @@ public class StepBC {
     private String sizeCode;      //产品id+尺码
     private Integer startInv;     //初始库存
     private Integer sumSalQty;    //销量总和
-    private Integer sumFrist4wksSalQty;        //前4周的销量总和
+    private Integer sumFirst4wksSalQty;        //前4周的销量总和
     private int posId;          //门店id
 
     public int getUserId() {
@@ -41,12 +41,12 @@ public class StepBC {
         this.sumSalQty = sumSalQty;
     }
 
-    public Integer getSumFrist4wksSalQty() {
-        return sumFrist4wksSalQty;
+    public Integer getSumFirst4wksSalQty() {
+        return sumFirst4wksSalQty;
     }
 
-    public void setSumFrist4wksSalQty(Integer sumFrist4wksSalQty) {
-        this.sumFrist4wksSalQty = sumFrist4wksSalQty;
+    public void setSumFirst4wksSalQty(Integer sumFirst4wksSalQty) {
+        this.sumFirst4wksSalQty = sumFirst4wksSalQty;
     }
 
     public int getPosId() {
