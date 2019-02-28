@@ -7,7 +7,7 @@ import java.util.Map;
 
 public interface StepBdDao extends BaseDao<StepBD> {
 
-    List<StepBD> getLList(int userId);
+    Map<Integer, List<StepBD>> getLList(int userId);
 
     Map<Integer, List<Map<String, Object>>> getStep10(int userId);
 }

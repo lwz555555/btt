@@ -83,15 +83,28 @@ public class StepBdDaoImpl  implements StepBdDao {
      * @return List<StepBD>
      */
     @Override
-    public List<StepBD> getLList(int userId) {
+    public Map<Integer, List<StepBD>> getLList(int userId) {
         String sql = "SELECT size_code, start_inv, sum_sal_qty sum_qty, " +
                 "first4wks_sal_qty, LEFT(size_code,10) prod_cd, pos_id " +
                 "FROM btt.dim_step_bc WHERE user_id = :userId";
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
                 .addValue("userId", userId);
-        List<StepBD> bdList = new ArrayList<>();
+//        List<StepBD> bdList = new ArrayList<>();
+
+
+        Map<Integer, List<StepBD>> map = new HashMap<>();
+
+
         return namedParameterJdbcTemplate.query(sql, sqlParameterSource, rs -> {
+            List<Integer> posIdList = new ArrayList<>();
+
             while (rs.next()) {
+                boolean had = true;
+                Integer posId = rs.getInt("pos_id");
+                if (!posIdList.contains(posId)){
+                    had = false;
+                    posIdList.add(posId);
+                }
                 String prodCd = rs.getString("prod_cd");
                 StepBD bd = new StepBD();
                 bd.setUserId(userId);
@@ -100,10 +113,20 @@ public class StepBdDaoImpl  implements StepBdDao {
                 bd.setSumQty(rs.getInt("sum_qty"));
                 bd.setFirst4WeeksSaleQty(rs.getInt("first4wks_sal_qty"));
                 bd.setProdCd(prodCd);
-                bd.setPosId(rs.getInt("pos_id"));
-                bdList.add(bd);
+                bd.setPosId(posId);
+
+                if (had){
+                    map.get(posId).add(bd);
+                }else {
+                    List<StepBD> bdList = new ArrayList<>();
+                    bdList.add(bd);
+                    map.put(posId, bdList);
+                }
+
+//                bdList.add(bd);
             }
-            return bdList;
+//            return bdList;
+            return map;
         });
     }
 

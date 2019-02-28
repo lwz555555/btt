@@ -8,10 +8,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service("stepBdService")
 public class StepBdServiceImpl implements StepBdService {
@@ -25,22 +22,47 @@ public class StepBdServiceImpl implements StepBdService {
     public List<StepBD> getStepBdResult(int userId) {
         Map<Integer, List<Map<String, Object>>> listMap = stepBdDao.getStep10(userId);
         List<StepBD> bdList = new ArrayList<>();
-        List<StepBD> rList = new ArrayList<>();
+//        List<StepBD> rList = new ArrayList<>();
+        //右表
+        Map<Integer, List<StepBD>> rMap = new HashMap<>();
+        //右表的posId列表
+        List<Integer> rPosIds = new ArrayList<>();
         for(List<Map<String, Object>> mapList : listMap.values()){
-            rList.addAll(getRList(userId, mapList));
+            List<StepBD> list = getRList(userId, mapList);
+            Integer posId = list.get(0).getPosId();
+            rPosIds.add(posId);
+            rMap.put(posId, list);
+//            rList.addAll(getRList(userId, mapList));
         }
-        List<StepBD> lList = stepBdDao.getLList(userId);
-        for(StepBD rBd : rList){
-            int posId = rBd.getPosId();
-            String prodCd = rBd.getProdCd();
-            for(StepBD lBd : lList){
-                if(posId == lBd.getPosId() && prodCd.equals(lBd.getProdCd())){
-                    bdList.add(lBd);
+        //左表
+        Map<Integer, List<StepBD>> lMap = stepBdDao.getLList(userId);
+        Set<Integer> lPosIds = lMap.keySet();
+        for (int l : lPosIds){
+            for (int r : rPosIds){
+                if (l == r){
+                    for (StepBD lBd : lMap.get(l)){
+                        loop:for (StepBD rBd : rMap.get(r)){
+                            if (lBd.getProdCd().equals(rBd.getProdCd())){
+                                bdList.add(lBd);
+                                break loop;
+                            }
+                        }
+                    }
                 }
             }
         }
-        return bdList;
+//        List<StepBD> lList = stepBdDao.getLList(userId);
+//        for(StepBD rBd : rList){
+////            int posId = rBd.getPosId();
+////            String prodCd = rBd.getProdCd();
+////            for(StepBD lBd : lList){
+////                if(posId == lBd.getPosId() && prodCd.equals(lBd.getProdCd())){
+////                    bdList.add(lBd);
+////                }
+////            }
+////        }
 
+        return bdList;
     }
 
     @Override
