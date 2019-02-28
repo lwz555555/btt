@@ -4,6 +4,7 @@ import com.cc5.btt.bean.ResponseBean;
 import com.cc5.btt.service.StepBdService;
 import org.apache.log4j.Logger;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -19,6 +20,7 @@ public class StepBdController {
     @Resource(name = "stepBdService")
     private StepBdService stepBdService;
 
+    @RequestMapping(value = "/runStepBD", method = {RequestMethod.POST})
     public ResponseBean runStepBd(int userId){
         Map<String, String> result;
         try {

@@ -3,6 +3,8 @@ package com.cc5.btt.entity;
 public class StepBD {
 
     private int userId;                 //用户id
+    private int posId;                  //门店id
+    private int recordId;               //记录id
     private String sizeCode;            //尺码
     private String prodCd;              //产品码
     private int startInv;               //初始库存
@@ -15,6 +17,22 @@ public class StepBD {
 
     public void setUserId(int userId) {
         this.userId = userId;
+    }
+
+    public int getPosId() {
+        return posId;
+    }
+
+    public void setPosId(int posId) {
+        this.posId = posId;
+    }
+
+    public int getRecordId() {
+        return recordId;
+    }
+
+    public void setRecordId(int recordId) {
+        this.recordId = recordId;
     }
 
     public String getSizeCode() {

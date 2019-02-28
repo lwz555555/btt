@@ -44,8 +44,10 @@ public class StepBdDaoImpl  implements StepBdDao {
      */
     @Override
     public int insert(int userId, List<StepBD> beanList) {
-        String sql = "INSERT INTO btt.dim_step_bd(user_id, size_code, start_inv, sum_qty, first_4weeks_sale_qty, prod_cd, update_time) " +
-                "VALUES(:userId, :sizeCode, :startInv, :sumQty, :first4WeeksSaleQty, :prodCd, now())";
+        String sql = "INSERT INTO btt.dim_step_bd(user_id, size_code, start_inv, sum_qty, " +
+                    "first_4weeks_sale_qty, prod_cd, pos_id, update_time) " +
+                "VALUES(:userId, :sizeCode, :startInv, :sumQty, " +
+                    ":first4WeeksSaleQty, :prodCd, :posId, now())";
         Map<String, Object>[] namedParameters = new HashMap[beanList.size()];
         for (int i = 0; i < beanList.size(); i++) {
             StepBD bd = beanList.get(i);
@@ -56,6 +58,7 @@ public class StepBdDaoImpl  implements StepBdDao {
             map.put("sumQty", bd.getSumQty());
             map.put("first4WeeksSaleQty", bd.getFirst4WeeksSaleQty());
             map.put("prodCd", bd.getProdCd());
+            map.put("posId", bd.getPosId());
             namedParameters[i] = map;
         }
         return namedParameterJdbcTemplate.batchUpdate(sql, namedParameters).length;
@@ -68,21 +71,21 @@ public class StepBdDaoImpl  implements StepBdDao {
      */
     @Override
     public int delete(int userId) {
-        String sql = "DELETE btt.dim_step_bd WHERE user_id = :userId";
+        String sql = "DELETE FROM btt.dim_step_bd WHERE user_id = :userId";
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
                 .addValue("userId", userId);
         return namedParameterJdbcTemplate.update(sql, sqlParameterSource);
     }
 
     /**
-     * BD步骤结果集
+     * 获取BD步骤中最后Join之前左表数据
      * @param userId 用户id
      * @return List<StepBD>
      */
     @Override
-    public List<StepBD> getBdResult(int userId, List<String> prodCdList) {
-        String sql = "SELECT size_code, start_inv, sum_sal_qty, " +
-                "sum_first4wks_sal_qty, LEFT(size_code,10) prod_cd " +
+    public List<StepBD> getLList(int userId) {
+        String sql = "SELECT size_code, start_inv, sum_sal_qty sum_qty, " +
+                "first4wks_sal_qty, LEFT(size_code,10) prod_cd, pos_id " +
                 "FROM btt.dim_step_bc WHERE user_id = :userId";
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
                 .addValue("userId", userId);
@@ -90,16 +93,15 @@ public class StepBdDaoImpl  implements StepBdDao {
         return namedParameterJdbcTemplate.query(sql, sqlParameterSource, rs -> {
             while (rs.next()) {
                 String prodCd = rs.getString("prod_cd");
-                if (prodCdList.contains(prodCd)){
-                    StepBD bd = new StepBD();
-                    bd.setUserId(userId);
-                    bd.setSizeCode(rs.getString("size_code"));
-                    bd.setStartInv(rs.getInt("start_inv"));
-                    bd.setSumQty(rs.getInt("sum_sal_qty"));
-                    bd.setFirst4WeeksSaleQty(rs.getInt("sum_first4wks_sal_qty"));
-                    bd.setProdCd(prodCd);
-                    bdList.add(bd);
-                }
+                StepBD bd = new StepBD();
+                bd.setUserId(userId);
+                bd.setSizeCode(rs.getString("size_code"));
+                bd.setStartInv(rs.getInt("start_inv"));
+                bd.setSumQty(rs.getInt("sum_qty"));
+                bd.setFirst4WeeksSaleQty(rs.getInt("first4wks_sal_qty"));
+                bd.setProdCd(prodCd);
+                bd.setPosId(rs.getInt("pos_id"));
+                bdList.add(bd);
             }
             return bdList;
         });
@@ -111,26 +113,48 @@ public class StepBdDaoImpl  implements StepBdDao {
      * @return
      */
     @Override
-    public List<Map<String, Object>> getStep10(int userId) {
-        String sql = "SELECT prod_cd, SUM(sum_sal_qty) sum_sum_qty FROM " +
-                        "(SELECT LEFT(size_code,10) prod_cd, start_inv, " +
-                            "sum_sal_qty, sum_first4wks_sal_qty " +
+    public Map<Integer, List<Map<String, Object>>> getStep10(int userId) {
+        String sql = "SELECT pos_id, prod_cd, SUM(sum_sal_qty) sum_sum_qty FROM " +
+                        "(SELECT pos_id, LEFT(size_code,10) prod_cd, start_inv, " +
+                            "sum_sal_qty, first4wks_sal_qty " +
                         "FROM btt.dim_step_bc WHERE user_id = :userId " +
                             "AND sum_sal_qty > 0) a " +
-                    "GROUP BY prod_cd ORDER BY sum_sum_qty DESC";
+                    "GROUP BY pos_id, prod_cd ORDER BY pos_id, sum_sum_qty DESC";
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
                 .addValue("userId", userId);
-        List<Map<String, Object>> result = new ArrayList<>();
+        Map<Integer, List<Map<String, Object>>> result = new HashMap<>();
         return namedParameterJdbcTemplate.query(sql, sqlParameterSource, rs -> {
             int recordId = 1;
+            int posId = 0;
+            List<Map<String, Object>> list = new ArrayList<>();
             while (rs.next()) {
-                Map<String, Object> row = new HashMap<>(3);
+                boolean flag = true;
+                int pi = rs.getInt("pos_id");
+                if (posId != pi){
+                    flag = false;
+                    posId = pi;
+                }
+                Map<String, Object> row = new HashMap<>(4);
                 row.put("recordId", recordId);
-                row.put("prodCd", rs.getString(1));
-                row.put("sumSumQty", rs.getInt(2));
-                result.add(row);
+                row.put("posId", posId);
+                row.put("prodCd", rs.getString("prod_cd"));
+                row.put("sumSumQty", rs.getInt("sum_sum_qty"));
+                if (flag){
+                    list.add(row);
+                }else {
+                    if (recordId == 1){
+                        list.add(row);
+                    }else {
+                        result.put((int)list.get(list.size()-1).get("posId"),list);
+                        list = new ArrayList<>();
+                        recordId = 1;
+                        row.put("recordId", recordId);
+                        list.add(row);
+                    }
+                }
                 recordId++;
             }
+            result.put(posId,list);
             return result;
         });
     }
