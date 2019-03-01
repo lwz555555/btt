@@ -20,49 +20,28 @@ public class StepBdServiceImpl implements StepBdService {
 
     @Override
     public List<StepBD> getStepBdResult(int userId) {
+        //BD步骤中的小步骤10(Record ID 55)的结果
         Map<Integer, List<Map<String, Object>>> listMap = stepBdDao.getStep10(userId);
-        List<StepBD> bdList = new ArrayList<>();
-//        List<StepBD> rList = new ArrayList<>();
-        //右表
-        Map<Integer, List<StepBD>> rMap = new HashMap<>();
-        //右表的posId列表
-        List<Integer> rPosIds = new ArrayList<>();
+        //BD最后结果
+        List<StepBD> bdResultList = new ArrayList<>();
+        //BD步骤中最后Join之前右表数据
+        List<StepBD> rList = new ArrayList<>();
         for(List<Map<String, Object>> mapList : listMap.values()){
-            List<StepBD> list = getRList(userId, mapList);
-            Integer posId = list.get(0).getPosId();
-            rPosIds.add(posId);
-            rMap.put(posId, list);
-//            rList.addAll(getRList(userId, mapList));
+            rList.addAll(getRList(userId, mapList));
         }
-        //左表
-        Map<Integer, List<StepBD>> lMap = stepBdDao.getLList(userId);
-        Set<Integer> lPosIds = lMap.keySet();
-        for (int l : lPosIds){
-            for (int r : rPosIds){
-                if (l == r){
-                    for (StepBD lBd : lMap.get(l)){
-                        loop:for (StepBD rBd : rMap.get(r)){
-                            if (lBd.getProdCd().equals(rBd.getProdCd())){
-                                bdList.add(lBd);
-                                break loop;
-                            }
-                        }
-                    }
+        //BD步骤中最后Join之前左表数据
+        List<StepBD> lList = stepBdDao.getLList(userId);
+        // Join：从左表中筛选出相同PosId、ProdCd字段值与右表PosId、ProdCd字段值相等的数据
+        for(StepBD rBd : rList){
+            int posId = rBd.getPosId();
+            String prodCd = rBd.getProdCd();
+            for(StepBD lBd : lList){
+                if(posId == lBd.getPosId() && prodCd.equals(lBd.getProdCd())){
+                    bdResultList.add(lBd);
                 }
             }
         }
-//        List<StepBD> lList = stepBdDao.getLList(userId);
-//        for(StepBD rBd : rList){
-////            int posId = rBd.getPosId();
-////            String prodCd = rBd.getProdCd();
-////            for(StepBD lBd : lList){
-////                if(posId == lBd.getPosId() && prodCd.equals(lBd.getProdCd())){
-////                    bdList.add(lBd);
-////                }
-////            }
-////        }
-
-        return bdList;
+        return bdResultList;
     }
 
     @Override
