@@ -142,42 +142,27 @@ public class StepBdDaoImpl  implements StepBdDao {
                             "sum_sal_qty, first4wks_sal_qty " +
                         "FROM btt.dim_step_bc WHERE user_id = :userId " +
                             "AND sum_sal_qty > 0) a " +
-                    "GROUP BY pos_id, prod_cd ORDER BY pos_id, sum_sum_qty DESC";
+                    "GROUP BY pos_id, prod_cd ORDER BY pos_id, sum_sum_qty DESC, prod_cd";
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
                 .addValue("userId", userId);
         Map<Integer, List<Map<String, Object>>> result = new HashMap<>();
         return namedParameterJdbcTemplate.query(sql, sqlParameterSource, rs -> {
-            int recordId = 1;
-            int posId = 0;
-            List<Map<String, Object>> list = new ArrayList<>();
-            while (rs.next()) {
-                boolean flag = true;
-                int pi = rs.getInt("pos_id");
-                if (posId != pi){
-                    flag = false;
-                    posId = pi;
-                }
+            while (rs.next()){
+                int posId = rs.getInt("pos_id");
                 Map<String, Object> row = new HashMap<>(4);
-                row.put("recordId", recordId);
                 row.put("posId", posId);
                 row.put("prodCd", rs.getString("prod_cd"));
                 row.put("sumSumQty", rs.getInt("sum_sum_qty"));
-                if (flag){
-                    list.add(row);
+                if (result.containsKey(posId)){
+                    row.put("recordId", result.get(posId).size() + 1);
+                    result.get(posId).add(row);
                 }else {
-                    if (recordId == 1){
-                        list.add(row);
-                    }else {
-                        result.put((int)list.get(list.size()-1).get("posId"),list);
-                        list = new ArrayList<>();
-                        recordId = 1;
-                        row.put("recordId", recordId);
-                        list.add(row);
-                    }
+                    row.put("recordId", 1);
+                    List<Map<String, Object>> list = new ArrayList<>();
+                    list.add(row);
+                    result.put(posId, list);
                 }
-                recordId++;
             }
-            result.put(posId,list);
             return result;
         });
     }
