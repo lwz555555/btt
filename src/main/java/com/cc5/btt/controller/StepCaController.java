@@ -3,16 +3,17 @@ package com.cc5.btt.controller;
 
 import com.cc5.btt.bean.ResponseBean;
 import com.cc5.btt.service.StepCaService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
 
 @RestController
 @RequestMapping("/stepca")
 public class StepCaController {
 
-    @Autowired
+    @Resource(name = "stepCaService")
     private StepCaService stepCaService;
 
 
