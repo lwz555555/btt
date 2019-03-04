@@ -1,6 +1,7 @@
 package com.cc5.btt.dao.impl;
 
 import com.cc5.btt.dao.StepCaDao;
+import com.cc5.btt.entity.StepBA;
 import com.cc5.btt.entity.StepBD;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -103,4 +104,69 @@ public class StepCaDaoImpl implements StepCaDao {
         });
     }
 
+
+    @Override
+    public Map<Integer, Map<String, List<StepBA>>> getGroupMap(int userId) {
+        String sql = "SELECT user_id, pos_id, rec_id, `name`, `value`, " +
+                "file_name FROM dim_step_ba WHERE user_id = :userId";
+        Map<Integer, Map<String, List<StepBA>>> result = new HashMap<>();
+        SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
+                .addValue("userId", userId);
+        return namedParameterJdbcTemplate.query(sql, sqlParameterSource, rs -> {
+            while (rs.next()) {
+                StepBA stepBA = new StepBA();
+                int posId = rs.getInt("pos_id");
+                int recId = rs.getInt("rec_id");
+                String key = recId + "_" + posId;
+                stepBA.setPosId(posId);
+                stepBA.setRecId(recId);
+                stepBA.setUserId(rs.getInt("user_id"));
+                stepBA.setName(rs.getString("name"));
+                stepBA.setFileName(rs.getString("file_name"));
+                stepBA.setValue(rs.getInt("value"));
+                if (result.containsKey(posId)) {
+                    Map<String, List<StepBA>> listMap = result.get(posId);
+                    if (listMap.containsKey(key)) {
+                        List<StepBA> list = listMap.get(key);
+                        list.add(stepBA);
+                    } else {
+                        List<StepBA> list = new ArrayList<>();
+                        list.add(stepBA);
+                        listMap.put(key, list);
+                    }
+                } else {
+                    Map<String, List<StepBA>> listMap = new HashMap<>();
+                    List<StepBA> list = new ArrayList<>();
+                    list.add(stepBA);
+                    listMap.put(key, list);
+                    result.put(posId, listMap);
+                }
+            }
+            return result;
+        });
+    }
+
+    @Override
+    public Map<Integer, List<String>> getGroupNameMap(int userId) {
+        String sql = "SELECT pos_id, `name` " +
+                "FROM dim_step_ba WHERE user_id = :userId GROUP BY `name`, pos_id";
+        Map<Integer, List<String>> result = new HashMap<>();
+        SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
+                .addValue("userId", userId);
+        return namedParameterJdbcTemplate.query(sql, sqlParameterSource, rs -> {
+            while (rs.next()) {
+                int posId = rs.getInt("pos_id");
+                String name = rs.getString("name");
+                if (result.containsKey(posId)) {
+                    List<String> list = result.get(posId);
+                    list.add(name);
+                } else {
+                    List<String> list = new ArrayList<>();
+                    list.add(name);
+                    result.put(posId, list);
+                }
+            }
+            return result;
+        });
+    }
 }
