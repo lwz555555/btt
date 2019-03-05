@@ -40,7 +40,7 @@ public class StepCaDaoImpl implements StepCaDao {
         String sql = "SELECT size_code, start_inv, sum_qty, " +
                 "first_4weeks_sale_qty, prod_cd, pos_id " +
                 "FROM btt.dim_step_bd WHERE user_id = :userId " +
-                "ORDER BY pos_id, size_code";
+                "ORDER BY LEFT(size_code, 10), RIGHT(size_code, LENGTH(size_code) - 14)";
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
                 .addValue("userId", userId);
         Map<Integer, List<StepBD>> map = new HashMap<>();
@@ -78,7 +78,7 @@ public class StepCaDaoImpl implements StepCaDao {
         return namedParameterJdbcTemplate.query(sql, sqlParameterSource, rs -> {
             while (rs.next()){
                 int posId = rs.getInt("pos_id");
-                String sizeCode = rs.getString("size_code");
+                String sizeCode = rs.getString("size_code").replaceAll("[-\\.]","_");
                 int startInv = rs.getInt("start_inv");
                 int sumQty = rs.getInt("sum_qty");
                 if (result.containsKey(posId)){
@@ -121,7 +121,9 @@ public class StepCaDaoImpl implements StepCaDao {
                 stepBA.setPosId(posId);
                 stepBA.setRecId(recId);
                 stepBA.setUserId(rs.getInt("user_id"));
-                stepBA.setName(rs.getString("name"));
+                String name = rs.getString("name");
+                name = name.replaceAll("[-\\.]", "_");
+                stepBA.setName(name);
                 stepBA.setFileName(rs.getString("file_name"));
                 stepBA.setValue(rs.getInt("value"));
                 if (result.containsKey(posId)) {
@@ -157,6 +159,7 @@ public class StepCaDaoImpl implements StepCaDao {
             while (rs.next()) {
                 int posId = rs.getInt("pos_id");
                 String name = rs.getString("name");
+                name = name.replaceAll("[-\\.]", "_");
                 if (result.containsKey(posId)) {
                     List<String> list = result.get(posId);
                     list.add(name);
