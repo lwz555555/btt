@@ -3,6 +3,7 @@ package com.cc5.btt.dao.impl;
 import com.cc5.btt.dao.StepCaDao;
 import com.cc5.btt.entity.StepBA;
 import com.cc5.btt.entity.StepBD;
+import com.cc5.btt.entity.StepCA;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -26,13 +27,31 @@ public class StepCaDaoImpl implements StepCaDao {
     }
 
     @Override
-    public int insert(int userId, List beanList) {
-        return 0;
+    public int insert(int userId, List<StepCA> beanList) {
+        String sql = "INSERT INTO btt.dim_step_ca(user_id, record_id, `name`, `value`, " +
+                "pos_id, update_time) " +
+                "VALUES(:userId, :recordId, :name, :value, " +
+                ":posId, now())";
+        Map<String, Object>[] namedParameters = new HashMap[beanList.size()];
+        for (int i = 0; i < beanList.size(); i++) {
+            StepCA stepCA = beanList.get(i);
+            Map<String, Object> map = new HashMap<>();
+            map.put("userId", userId);
+            map.put("recordId", stepCA.getRecordId());
+            map.put("name", stepCA.getName());
+            map.put("value", stepCA.getValue());
+            map.put("posId", stepCA.getPosId());
+            namedParameters[i] = map;
+        }
+        return namedParameterJdbcTemplate.batchUpdate(sql, namedParameters).length;
     }
 
     @Override
     public int delete(int userId) {
-        return 0;
+        String sql = "DELETE FROM btt.dim_step_ca WHERE user_id = :userId";
+        SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
+                .addValue("userId", userId);
+        return namedParameterJdbcTemplate.update(sql, sqlParameterSource);
     }
 
     @Override
@@ -125,7 +144,7 @@ public class StepCaDaoImpl implements StepCaDao {
                 name = name.replaceAll("[-\\.]", "_");
                 stepBA.setName(name);
                 stepBA.setFileName(rs.getString("file_name"));
-                stepBA.setValue(rs.getInt("value"));
+                stepBA.setValue(rs.getString("value") == null ? null : rs.getInt("value"));
                 if (result.containsKey(posId)) {
                     Map<String, List<StepBA>> listMap = result.get(posId);
                     if (listMap.containsKey(key)) {
@@ -166,6 +185,30 @@ public class StepCaDaoImpl implements StepCaDao {
                 } else {
                     List<String> list = new ArrayList<>();
                     list.add(name);
+                    result.put(posId, list);
+                }
+            }
+            return result;
+        });
+    }
+
+    @Override
+    public Map<Integer, List<Integer>> getHeaderMap(int userId) {
+        String sql = "SELECT pos_id, record_id FROM dim_step_ca GROUP BY " +
+                "record_id, pos_id ORDER BY record_id";
+        Map<Integer, List<Integer>> result = new HashMap<>();
+        SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
+                .addValue("userId", userId);
+        return namedParameterJdbcTemplate.query(sql, sqlParameterSource, rs -> {
+            while (rs.next()) {
+                int posId = rs.getInt("pos_id");
+                int recordId = rs.getInt("record_id");
+                if (result.containsKey(posId)) {
+                    List<Integer> list = result.get(posId);
+                    list.add(recordId);
+                } else {
+                    List<Integer> list = new ArrayList<>();
+                    list.add(recordId);
                     result.put(posId, list);
                 }
             }

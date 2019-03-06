@@ -2,11 +2,12 @@ package com.cc5.btt.dao;
 
 import com.cc5.btt.entity.StepBA;
 import com.cc5.btt.entity.StepBD;
+import com.cc5.btt.entity.StepCA;
 
 import java.util.List;
 import java.util.Map;
 
-public interface StepCaDao extends BaseDao{
+public interface StepCaDao extends BaseDao<StepCA>{
 
     Map<Integer, List<StepBD>> getBdResult1(int userId);
 
@@ -15,5 +16,8 @@ public interface StepCaDao extends BaseDao{
     Map<Integer, Map<String, List<StepBA>>> getGroupMap (int userId);
 
     Map<Integer, List<String>> getGroupNameMap (int userId);
+
+    Map<Integer, List<Integer>> getHeaderMap (int userId);
+
 
 }

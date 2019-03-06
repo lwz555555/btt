@@ -1,11 +1,14 @@
 package com.cc5.btt.service.impl;
 
+import com.cc5.btt.constants.BTTConstants;
 import com.cc5.btt.dao.StepCaDao;
 import com.cc5.btt.entity.StepAC;
 import com.cc5.btt.entity.StepBA;
 import com.cc5.btt.entity.StepBD;
+import com.cc5.btt.entity.StepCA;
 import com.cc5.btt.service.StepCaService;
 import org.apache.log4j.Logger;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -56,10 +59,208 @@ public class StepCaServiceImpl implements StepCaService {
         }
         getIntersection(step1Map, userId);
         getUnion (step1Map, userId);
+        List<StepCA> dataList = new ArrayList<>();
         Map<Integer, Map<Integer, Map<String, List<StepBA>>>> sortMap = sortData (step1Map);
+        handleData (sortMap, userId, dataList);
+        List<StepCA> newDataList = getIntersection(dataList);
+        stepCaDao.delete(userId);
+        int ret = stepCaDao.insert(userId, newDataList);
+        if (ret > 0) {
+            return 1;
+        }
         return 0;
     }
 
+    @Override
+    public Workbook prepareDownload(int userId) {
+        Map<Integer, List<Integer>> headerMap = stepCaDao.getHeaderMap(userId);
+
+        return null;
+    }
+
+
+    /**
+     * 取交集
+     * @param dataList
+     */
+    private List<StepCA> getIntersection (List<StepCA> dataList) {
+        List<StepCA> newDataList = new ArrayList<>();
+        if (dataList != null) {
+           for (StepCA stepCA : dataList) {
+               for (String str : BTTConstants.stepCAHeaders) {
+                   if (stepCA.getName().equals(str)) {
+                       newDataList.add(stepCA);
+                   }
+               }
+           }
+        }
+        return newDataList;
+    }
+
+
+
+    /**
+     * 处理数据
+     * @param sortMap
+     * @param userId
+     * @param dataList
+     */
+    private void handleData (Map<Integer, Map<Integer, Map<String, List<StepBA>>>> sortMap,
+                             int userId, List<StepCA> dataList) {
+        for (Map.Entry<Integer, Map<Integer, Map<String, List<StepBA>>>> entry : sortMap.entrySet()) {
+            int posId = entry.getKey();
+            Map<Integer, Map<String, List<StepBA>>> recordMap = entry.getValue();
+            int size = recordMap.size();
+            if (size < 422) {
+                int recordId = 0;
+                int listSize = 0;
+                for (Map.Entry<Integer, Map<String, List<StepBA>>> entry1 : recordMap.entrySet()) {
+                    recordId = entry1.getKey();
+                    Map<String, List<StepBA>> listMap = entry1.getValue();
+                    for (Map.Entry<String, List<StepBA>> entry2 : listMap.entrySet()) {
+                        String sizeCode = entry2.getKey();
+                        List<StepBA> list = entry2.getValue();
+                        listSize = list.size();
+                        List<StepCA> bagainList = createFristList(recordId, sizeCode, userId, posId);
+                        dataList.addAll(bagainList);
+                        for (StepBA stepBA : list) {
+                            StepCA stepCA = new StepCA();
+                            stepCA.setUserId(userId);
+                            stepCA.setPosId(posId);
+                            stepCA.setRecordId(recordId);
+                            stepCA.setName(stepBA.getRecId()+"");
+                            stepCA.setValue(stepBA.getValue()+"");
+                            dataList.add(stepCA);
+                        }
+                    }
+                }
+                addNullRow (recordId+1, null, userId, posId, dataList, listSize);
+            } else if (size >= 422 && size < 842) {
+                int recordId = 0;
+                int listSize = 0;
+                for (Map.Entry<Integer, Map<String, List<StepBA>>> entry1 : recordMap.entrySet()) {
+                    recordId = entry1.getKey();
+                    if (recordId == 421) {
+                        addNullRow (recordId, null, userId, posId, dataList, listSize);
+                    }
+                    Map<String, List<StepBA>> listMap = entry1.getValue();
+                    for (Map.Entry<String, List<StepBA>> entry2 : listMap.entrySet()) {
+                        String sizeCode = entry2.getKey();
+                        List<StepBA> list = entry2.getValue();
+                        listSize = list.size();
+                        List<StepCA> bagainList = createFristList(recordId, sizeCode, userId, posId);
+                        dataList.addAll(bagainList);
+                        for (StepBA stepBA : list) {
+                            StepCA stepCA = new StepCA();
+                            stepCA.setUserId(userId);
+                            stepCA.setPosId(posId);
+                            if (recordId >= 421) {
+                                stepCA.setRecordId(recordId - 420);
+                            } else {
+                                stepCA.setRecordId(recordId);
+                            }
+                            stepCA.setName(stepBA.getRecId()+"");
+                            stepCA.setValue(stepBA.getValue()+"");
+                            dataList.add(stepCA);
+                        }
+                    }
+                }
+                addNullRow ((recordId-420)+1, null, userId, posId, dataList, listSize);
+            } else if (size >= 842) {
+                int recordId = 0;
+                int listSize = 0;
+                for (Map.Entry<Integer, Map<String, List<StepBA>>> entry1 : recordMap.entrySet()) {
+                    recordId = entry1.getKey();
+                    if (recordId == 421) {
+                        addNullRow (recordId, null, userId, posId, dataList, listSize);
+                    }
+                    if (recordId == 841) {
+                        addNullRow (recordId-420, null, userId, posId, dataList, listSize);
+                    }
+                    Map<String, List<StepBA>> listMap = entry1.getValue();
+                    for (Map.Entry<String, List<StepBA>> entry2 : listMap.entrySet()) {
+                        String sizeCode = entry2.getKey();
+                        List<StepBA> list = entry2.getValue();
+                        listSize = list.size();
+                        List<StepCA> bagainList = createFristList(recordId, sizeCode, userId, posId);
+                        dataList.addAll(bagainList);
+                        for (StepBA stepBA : list) {
+                            StepCA stepCA = new StepCA();
+                            stepCA.setUserId(userId);
+                            stepCA.setPosId(posId);
+                            if (recordId >= 421 && recordId < 841) {
+                                stepCA.setRecordId(recordId - 420);
+                            } else if (recordId >= 841) {
+                                stepCA.setRecordId(recordId - 840);
+                            } else {
+                                stepCA.setRecordId(recordId);
+                            }
+                            stepCA.setName(stepBA.getRecId()+"");
+                            stepCA.setValue(stepBA.getValue()+"");
+                            dataList.add(stepCA);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    /**
+     * 填加空行
+     * @param recordId
+     * @param sizeCode
+     * @param userId
+     * @param posId
+     * @param dataList
+     * @param listSize
+     */
+    private void addNullRow (int recordId, String sizeCode,
+                             int userId, int posId, List<StepCA> dataList,
+                             int listSize) {
+        List<StepCA> bagainList = createFristList(recordId, sizeCode, userId, posId);
+        dataList.addAll(bagainList);
+        int a = -2;
+        for (int i = 0; i < listSize; i++) {
+            StepCA stepCA = new StepCA();
+            stepCA.setUserId(userId);
+            stepCA.setPosId(posId);
+            stepCA.setRecordId(recordId);
+            stepCA.setName(a + "");
+            stepCA.setValue(null);
+            dataList.add(stepCA);
+            a++;
+        }
+    }
+
+
+
+    private List<StepCA> createFristList (int recordId, String sizeCode, int userId, int posId) {
+        List<StepCA> list = new ArrayList<>();
+        StepCA stepCA1 = new StepCA();
+        stepCA1.setUserId(userId);
+        stepCA1.setName("Field");
+        stepCA1.setPosId(posId);
+        stepCA1.setRecordId(recordId);
+        stepCA1.setValue(recordId + "");
+        StepCA stepCA2 = new StepCA();
+        stepCA2.setUserId(userId);
+        stepCA2.setName("Name");
+        stepCA2.setPosId(posId);
+        stepCA2.setRecordId(recordId);
+        stepCA2.setValue(sizeCode);
+        list.add(stepCA1);
+        list.add(stepCA2);
+        return list;
+
+    }
+
+
+    /**
+     * 给分组之后的map再加一个序列
+     * @param step1Map
+     * @return
+     */
     private Map<Integer, Map<Integer, Map<String, List<StepBA>>>> sortData (
             Map<Integer, List<StepBA>> step1Map) {
         Map<Integer, Map<Integer, Map<String, List<StepBA>>>> returnMap = new LinkedHashMap<>();
@@ -80,7 +281,11 @@ public class StepCaServiceImpl implements StepCaService {
         return returnMap;
     }
 
-
+    /**
+     * 按name分组
+     * @param list
+     * @return
+     */
     private Map<String, List<StepBA>> groupByName (List<StepBA> list) {
         Map<String, List<StepBA>> sortMap = new LinkedHashMap<>();
         for (StepBA stepBA : list) {
