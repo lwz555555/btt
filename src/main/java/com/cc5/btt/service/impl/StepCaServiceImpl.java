@@ -7,6 +7,7 @@ import com.cc5.btt.entity.StepBA;
 import com.cc5.btt.entity.StepBD;
 import com.cc5.btt.entity.StepCA;
 import com.cc5.btt.service.StepCaService;
+import com.cc5.btt.util.ExcelWriter;
 import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.stereotype.Service;
@@ -73,8 +74,22 @@ public class StepCaServiceImpl implements StepCaService {
 
     @Override
     public Workbook prepareDownload(int userId) {
-        Map<Integer, List<Integer>> headerMap = stepCaDao.getHeaderMap(userId);
-
+        Map<Integer, List<String>> headerMap = stepCaDao.getHeaderMap(userId);
+        Map<Integer, Map<String, List<String>>> dataMap = stepCaDao.getExcelData(userId);
+        if (!dataMap.isEmpty()) {
+            for (Map.Entry<Integer, Map<String, List<String>>> entry : dataMap.entrySet()) {
+                int posId = entry.getKey();
+                Map<String, List<String>> map = entry.getValue();
+                Map<String, List<String>> newMap = new LinkedHashMap<>();
+                for (String str : BTTConstants.stepCAHeaders) {
+                    newMap.put(str, map.get(str));
+                }
+                dataMap.put(posId, newMap);
+            }
+        }
+        if (!headerMap.isEmpty()) {
+            return ExcelWriter.writeStepACMap(dataMap, headerMap);
+        }
         return null;
     }
 
@@ -121,7 +136,7 @@ public class StepCaServiceImpl implements StepCaService {
                         String sizeCode = entry2.getKey();
                         List<StepBA> list = entry2.getValue();
                         listSize = list.size();
-                        List<StepCA> bagainList = createFristList(recordId, sizeCode, userId, posId);
+                        List<StepCA> bagainList = createFristList(recordId, sizeCode, userId, posId, 0);
                         dataList.addAll(bagainList);
                         for (StepBA stepBA : list) {
                             StepCA stepCA = new StepCA();
@@ -129,7 +144,9 @@ public class StepCaServiceImpl implements StepCaService {
                             stepCA.setPosId(posId);
                             stepCA.setRecordId(recordId);
                             stepCA.setName(stepBA.getRecId()+"");
-                            stepCA.setValue(stepBA.getValue()+"");
+                            if (stepBA.getValue() != null) {
+                                stepCA.setValue(stepBA.getValue()+"");
+                            }
                             dataList.add(stepCA);
                         }
                     }
@@ -148,7 +165,7 @@ public class StepCaServiceImpl implements StepCaService {
                         String sizeCode = entry2.getKey();
                         List<StepBA> list = entry2.getValue();
                         listSize = list.size();
-                        List<StepCA> bagainList = createFristList(recordId, sizeCode, userId, posId);
+                        List<StepCA> bagainList = createFristList(recordId, sizeCode, userId, posId, 0);
                         dataList.addAll(bagainList);
                         for (StepBA stepBA : list) {
                             StepCA stepCA = new StepCA();
@@ -160,7 +177,9 @@ public class StepCaServiceImpl implements StepCaService {
                                 stepCA.setRecordId(recordId);
                             }
                             stepCA.setName(stepBA.getRecId()+"");
-                            stepCA.setValue(stepBA.getValue()+"");
+                            if (stepBA.getValue() != null) {
+                                stepCA.setValue(stepBA.getValue()+"");
+                            }
                             dataList.add(stepCA);
                         }
                     }
@@ -182,7 +201,7 @@ public class StepCaServiceImpl implements StepCaService {
                         String sizeCode = entry2.getKey();
                         List<StepBA> list = entry2.getValue();
                         listSize = list.size();
-                        List<StepCA> bagainList = createFristList(recordId, sizeCode, userId, posId);
+                        List<StepCA> bagainList = createFristList(recordId, sizeCode, userId, posId, 0);
                         dataList.addAll(bagainList);
                         for (StepBA stepBA : list) {
                             StepCA stepCA = new StepCA();
@@ -196,7 +215,9 @@ public class StepCaServiceImpl implements StepCaService {
                                 stepCA.setRecordId(recordId);
                             }
                             stepCA.setName(stepBA.getRecId()+"");
-                            stepCA.setValue(stepBA.getValue()+"");
+                            if (stepBA.getValue() != null) {
+                                stepCA.setValue(stepBA.getValue()+"");
+                            }
                             dataList.add(stepCA);
                         }
                     }
@@ -218,7 +239,7 @@ public class StepCaServiceImpl implements StepCaService {
     private void addNullRow (int recordId, String sizeCode,
                              int userId, int posId, List<StepCA> dataList,
                              int listSize) {
-        List<StepCA> bagainList = createFristList(recordId, sizeCode, userId, posId);
+        List<StepCA> bagainList = createFristList(recordId, sizeCode, userId, posId, 1);
         dataList.addAll(bagainList);
         int a = -2;
         for (int i = 0; i < listSize; i++) {
@@ -235,14 +256,19 @@ public class StepCaServiceImpl implements StepCaService {
 
 
 
-    private List<StepCA> createFristList (int recordId, String sizeCode, int userId, int posId) {
+    private List<StepCA> createFristList (int recordId, String sizeCode, int userId, int posId,
+                                          int type) {
         List<StepCA> list = new ArrayList<>();
         StepCA stepCA1 = new StepCA();
         stepCA1.setUserId(userId);
         stepCA1.setName("Field");
         stepCA1.setPosId(posId);
         stepCA1.setRecordId(recordId);
-        stepCA1.setValue(recordId + "");
+        if (type == 0) {
+            stepCA1.setValue(recordId + "");
+        } else if (type == 1) {
+            stepCA1.setValue(null);
+        }
         StepCA stepCA2 = new StepCA();
         stepCA2.setUserId(userId);
         stepCA2.setName("Name");

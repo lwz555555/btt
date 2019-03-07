@@ -17,7 +17,9 @@ public interface StepCaDao extends BaseDao<StepCA>{
 
     Map<Integer, List<String>> getGroupNameMap (int userId);
 
-    Map<Integer, List<Integer>> getHeaderMap (int userId);
+    Map<Integer, List<String>> getHeaderMap (int userId);
+
+    Map<Integer, Map<String, List<String>>> getExcelData (int userId);
 
 
 }

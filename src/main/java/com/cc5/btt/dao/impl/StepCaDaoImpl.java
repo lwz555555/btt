@@ -144,7 +144,10 @@ public class StepCaDaoImpl implements StepCaDao {
                 name = name.replaceAll("[-\\.]", "_");
                 stepBA.setName(name);
                 stepBA.setFileName(rs.getString("file_name"));
-                stepBA.setValue(rs.getString("value") == null ? null : rs.getInt("value"));
+                String value = rs.getString("value");
+                if (value != null) {
+                    stepBA.setValue(rs.getInt("value"));
+                }
                 if (result.containsKey(posId)) {
                     Map<String, List<StepBA>> listMap = result.get(posId);
                     if (listMap.containsKey(key)) {
@@ -193,10 +196,10 @@ public class StepCaDaoImpl implements StepCaDao {
     }
 
     @Override
-    public Map<Integer, List<Integer>> getHeaderMap(int userId) {
+    public Map<Integer, List<String>> getHeaderMap(int userId) {
         String sql = "SELECT pos_id, record_id FROM dim_step_ca GROUP BY " +
                 "record_id, pos_id ORDER BY record_id";
-        Map<Integer, List<Integer>> result = new HashMap<>();
+        Map<Integer, List<String>> result = new HashMap<>();
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
                 .addValue("userId", userId);
         return namedParameterJdbcTemplate.query(sql, sqlParameterSource, rs -> {
@@ -204,12 +207,47 @@ public class StepCaDaoImpl implements StepCaDao {
                 int posId = rs.getInt("pos_id");
                 int recordId = rs.getInt("record_id");
                 if (result.containsKey(posId)) {
-                    List<Integer> list = result.get(posId);
-                    list.add(recordId);
+                    List<String> list = result.get(posId);
+                    list.add(recordId+"");
                 } else {
-                    List<Integer> list = new ArrayList<>();
-                    list.add(recordId);
+                    List<String> list = new ArrayList<>();
+                    list.add("RecordID");
+                    list.add(recordId+"");
                     result.put(posId, list);
+                }
+            }
+            return result;
+        });
+    }
+
+    @Override
+    public Map<Integer, Map<String, List<String>>> getExcelData(int userId) {
+        String sql = "SELECT `name`, `value`, " +
+                "pos_id FROM btt.dim_step_ca WHERE user_id = :userId ORDER BY record_id";
+        Map<Integer, Map<String, List<String>>> result = new HashMap<>();
+        SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
+                .addValue("userId", userId);
+        return namedParameterJdbcTemplate.query(sql, sqlParameterSource, rs -> {
+            while (rs.next()) {
+                String name = rs.getString("name");
+                String value = rs.getString("value");
+                int posId = rs.getInt("pos_id");
+                if (result.containsKey(posId)) {
+                    Map<String, List<String>> map = result.get(posId);
+                    if (map.containsKey(name)) {
+                        List<String> list = map.get(name);
+                        list.add(value);
+                    } else {
+                        List<String> list = new ArrayList<>();
+                        list.add(value);
+                        map.put(name, list);
+                    }
+                } else {
+                    Map<String, List<String>> map = new LinkedHashMap<>();
+                    List<String> list = new ArrayList<>();
+                    list.add(value);
+                    map.put(name, list);
+                    result.put(posId, map);
                 }
             }
             return result;

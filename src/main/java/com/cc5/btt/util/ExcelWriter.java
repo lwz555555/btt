@@ -16,6 +16,35 @@ public class ExcelWriter {
 	
     public static final Map<Class<?>, Map<String, Method>> CACHE = new ConcurrentHashMap<>();
 
+
+    public static Workbook writeStepACMap (Map<Integer, Map<String, List<String>>> dataMap,
+                                      Map<Integer, List<String>> headerMap) {
+        SXSSFWorkbook workbook = new SXSSFWorkbook();
+        for (Map.Entry<Integer, List<String>> entry : headerMap.entrySet()) {
+            int podId = entry.getKey();
+            SXSSFSheet sheet = workbook.createSheet(podId+"");
+            SXSSFRow header = sheet.createRow(0);
+            int i = 0;
+            for (String str : entry.getValue()) {
+                header.createCell(i++).setCellValue(str);
+            }
+            i = 1;
+            Map<String, List<String>> map = dataMap.get(podId);
+            for (Map.Entry<String, List<String>> entry1 : map.entrySet()) {
+                SXSSFRow body = sheet.createRow(i++);
+                int j = 0;
+                body.createCell(j).setCellValue(entry1.getKey());
+                j++;
+                for (String string : entry1.getValue()) {
+                    body.createCell(j++).setCellValue(string == null ? "" : string);
+                }
+            }
+        }
+        return workbook;
+    }
+
+
+
     public static Workbook writeMap(List<Map<String, String>> rows, Map<String, String> headerMap) {
         SXSSFWorkbook workbook = new SXSSFWorkbook();
         SXSSFSheet sheet = workbook.createSheet();
