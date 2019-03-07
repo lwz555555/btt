@@ -25,12 +25,10 @@ public class StepCbDaoImpl implements StepCbDao {
 
     @Override
     public Map<Integer, Map<String, Map<Integer, String>>> getCaResult(int userId) {
-        //这个sql待CA步骤完成后需要根据实际表字段调整
-        String sql = "SELECT record_id, `name`, `value`, pos_id " +
+        String sql = "SELECT record_id `name`, `name` record_id, `value`, pos_id " +
                 "FROM btt.dim_step_ca WHERE user_id = :userId " +
-                "AND record_id = :recordId1 AND recordId = :recordId2 " +
+                "AND `name` = :recordId1 OR `name` = :recordId2 " +
                 "ORDER BY pos_id, record_id, `name`";
-
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
                 .addValue("userId", userId)
                 .addValue("recordId1", "Name")
