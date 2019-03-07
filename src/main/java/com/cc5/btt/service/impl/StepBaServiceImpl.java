@@ -197,7 +197,7 @@ public class StepBaServiceImpl implements StepBaService {
                 if ("Monday".equals(week)) {
                     stepAC.setRecId(1);
                 }
-                stepAC.setUnits(1);
+//                stepAC.setUnits(1);
                 part2NewList.add(stepAC);
             }
         }

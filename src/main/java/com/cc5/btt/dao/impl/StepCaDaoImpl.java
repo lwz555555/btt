@@ -146,7 +146,12 @@ public class StepCaDaoImpl implements StepCaDao {
                 stepBA.setFileName(rs.getString("file_name"));
                 String value = rs.getString("value");
                 if (value != null) {
-                    stepBA.setValue(rs.getInt("value"));
+                    int valueInt = rs.getInt("value");
+                    if (valueInt < 0) {
+                        stepBA.setValue(0);
+                    } else {
+                        stepBA.setValue(valueInt);
+                    }
                 }
                 if (result.containsKey(posId)) {
                     Map<String, List<StepBA>> listMap = result.get(posId);
