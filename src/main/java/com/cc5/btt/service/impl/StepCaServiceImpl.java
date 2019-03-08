@@ -82,7 +82,9 @@ public class StepCaServiceImpl implements StepCaService {
                 Map<String, List<String>> map = entry.getValue();
                 Map<String, List<String>> newMap = new LinkedHashMap<>();
                 for (String str : BTTConstants.stepCAHeaders) {
-                    newMap.put(str, map.get(str));
+                    if (map.get(str) != null) {
+                        newMap.put(str, map.get(str));
+                    }
                 }
                 dataMap.put(posId, newMap);
             }

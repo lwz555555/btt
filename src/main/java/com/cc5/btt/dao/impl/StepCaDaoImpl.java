@@ -202,8 +202,8 @@ public class StepCaDaoImpl implements StepCaDao {
 
     @Override
     public Map<Integer, List<String>> getHeaderMap(int userId) {
-        String sql = "SELECT pos_id, record_id FROM dim_step_ca GROUP BY " +
-                "record_id, pos_id ORDER BY record_id";
+        String sql = "SELECT pos_id, record_id FROM dim_step_ca WHERE user_id = :userId" +
+                " GROUP BY record_id, pos_id ORDER BY record_id";
         Map<Integer, List<String>> result = new HashMap<>();
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
                 .addValue("userId", userId);

@@ -34,6 +34,7 @@ public class StepCaController {
             ResponseUtil.writeWorkbook(stepCaService.prepareDownload(userId),
                     "StepAC_Data.xlsx", response);
         } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

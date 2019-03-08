@@ -35,8 +35,10 @@ public class ExcelWriter {
                 int j = 0;
                 body.createCell(j).setCellValue(entry1.getKey());
                 j++;
-                for (String string : entry1.getValue()) {
-                    body.createCell(j++).setCellValue(string == null ? "" : string);
+                if (entry1.getValue() != null) {
+                    for (String string : entry1.getValue()) {
+                        body.createCell(j++).setCellValue(string == null ? "" : string);
+                    }
                 }
             }
         }
