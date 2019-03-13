@@ -8,7 +8,7 @@ public class StepZA {
     private String field1;
     private String prodCd;
     private String size;
-    private String scnearioName;
+    private String scenarioName;
     private Integer freqFct;
     private String demandFct;
     private Integer targetDaysFct;
@@ -82,11 +82,11 @@ public class StepZA {
     }
 
     public String getScnearioName() {
-        return scnearioName;
+        return scenarioName;
     }
 
-    public void setScnearioName(String scnearioName) {
-        this.scnearioName = scnearioName;
+    public void setScenarioName(String scenarioName) {
+        this.scenarioName = scenarioName;
     }
 
     public Integer getFreqFct() {
