@@ -5,10 +5,10 @@ public class StepZA {
     private int id;
     private int userId;
     private int posId;
-    private String field1;
+    private String field1;                  //Scenario_Name
     private String prodCd;
     private String size;
-    private String scenarioName;
+    private String scenarioName;            //Scenario name
     private Integer freqFct;
     private String demandFct;
     private Integer targetDaysFct;
@@ -32,6 +32,17 @@ public class StepZA {
     private Integer dcCheckNew;
     private Integer acc4weeksSales;
     private Integer wohInv;
+
+    //中间字段
+    private String field;
+    private int record;
+    private String prodCd2;
+    private String gblCatSumLongDesc;
+    private String gender;
+    private String itemCategory;
+    private String region;
+    private String coreSize;
+    private int coreSizeFlag;
 
     public int getId() {
         return id;
@@ -81,7 +92,7 @@ public class StepZA {
         this.size = size;
     }
 
-    public String getScnearioName() {
+    public String getScenarioName() {
         return scenarioName;
     }
 
@@ -271,5 +282,78 @@ public class StepZA {
 
     public void setWohInv(Integer wohInv) {
         this.wohInv = wohInv;
+    }
+
+
+    public String getField() {
+        return field;
+    }
+
+    public void setField(String field) {
+        this.field = field;
+    }
+
+    public int getRecord() {
+        return record;
+    }
+
+    public void setRecord(int record) {
+        this.record = record;
+    }
+
+    public String getProdCd2() {
+        return prodCd2;
+    }
+
+    public void setProdCd2(String prodCd2) {
+        this.prodCd2 = prodCd2;
+    }
+
+    public String getGblCatSumLongDesc() {
+        return gblCatSumLongDesc;
+    }
+
+    public void setGblCatSumLongDesc(String gblCatSumLongDesc) {
+        this.gblCatSumLongDesc = gblCatSumLongDesc;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public String getItemCategory() {
+        return itemCategory;
+    }
+
+    public void setItemCategory(String itemCategory) {
+        this.itemCategory = itemCategory;
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
+    }
+
+    public String getCoreSize() {
+        return coreSize;
+    }
+
+    public void setCoreSize(String coreSize) {
+        this.coreSize = coreSize;
+    }
+
+    public int getCoreSizeFlag() {
+        return coreSizeFlag;
+    }
+
+    public void setCoreSizeFlag(int coreSizeFlag) {
+        this.coreSizeFlag = coreSizeFlag;
     }
 }

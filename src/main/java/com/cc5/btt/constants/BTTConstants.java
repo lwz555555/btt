@@ -5,6 +5,10 @@ import java.util.List;
 
 public class BTTConstants {
 
+    public static final String app = "APP";
+    public static final String ftw = "FTW";
+    public static final String others = "OTHERS";
+
     public static final List<String> stepAbHeaders = new ArrayList<>(7);
 
     static {
