@@ -2,7 +2,6 @@ package com.cc5.btt.service.impl;
 
 import com.cc5.btt.constants.BTTConstants;
 import com.cc5.btt.dao.StepCaDao;
-import com.cc5.btt.entity.StepAC;
 import com.cc5.btt.entity.StepBA;
 import com.cc5.btt.entity.StepBD;
 import com.cc5.btt.entity.StepCA;
@@ -14,12 +13,11 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service("stepCaService")
 public class StepCaServiceImpl implements StepCaService {
 
-    private static final Logger log = Logger.getLogger(StepAbServiceImpl.class);
+    private static final Logger log = Logger.getLogger(StepCaServiceImpl.class);
 
     @Resource(name = "stepCaDao")
     private StepCaDao stepCaDao;

@@ -17,7 +17,7 @@ import java.util.Map;
 @Repository("stepCbDao")
 public class StepCbDaoImpl implements StepCbDao {
 
-    private static final Logger log = Logger.getLogger(StepAbDaoImpl.class);
+    private static final Logger log = Logger.getLogger(StepCbDaoImpl.class);
 
     @Resource
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;

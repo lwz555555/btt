@@ -13,7 +13,7 @@ import java.util.*;
 @Service("stepBdService")
 public class StepBdServiceImpl implements StepBdService {
 
-    private static final Logger log = Logger.getLogger(StepAbServiceImpl.class);
+    private static final Logger log = Logger.getLogger(StepBdServiceImpl.class);
 
     @Resource(name = "stepBdDao")
     private StepBdDao stepBdDao;

@@ -19,7 +19,7 @@ import java.util.Map;
 @RequestMapping("/stepac")
 public class StepAcController {
 
-    private static final Logger log = Logger.getLogger(StepAbController.class);
+    private static final Logger log = Logger.getLogger(StepAcController.class);
 
     @Resource(name = "stepAbService")
     StepAbService stepAbService;

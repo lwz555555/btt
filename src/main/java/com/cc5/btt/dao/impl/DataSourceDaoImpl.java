@@ -17,7 +17,7 @@ import java.util.Map;
 @Repository("dataSourceDao")
 public class DataSourceDaoImpl implements DataSourceDao {
 
-    private static final Logger log = Logger.getLogger(StepAbDaoImpl.class);
+    private static final Logger log = Logger.getLogger(DataSourceDaoImpl.class);
 
     @Resource
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;

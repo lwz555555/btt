@@ -19,7 +19,7 @@ import java.util.*;
 @Service("dataSourceService")
 public class DataSourceServiceImpl implements DataSourceService {
 
-    private static final Logger log = Logger.getLogger(StepAbServiceImpl.class);
+    private static final Logger log = Logger.getLogger(DataSourceServiceImpl.class);
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 

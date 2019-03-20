@@ -14,7 +14,7 @@ import java.util.*;
 @Service("stepCbService")
 public class StepCbServiceImpl implements StepCbService {
 
-    private static final Logger log = Logger.getLogger(StepAbServiceImpl.class);
+    private static final Logger log = Logger.getLogger(StepCbServiceImpl.class);
 
     @Resource(name = "stepCbDao")
     private StepCbDao stepCbDao;

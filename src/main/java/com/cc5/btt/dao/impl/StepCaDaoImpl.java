@@ -16,7 +16,7 @@ import java.util.*;
 @Repository("stepCaDao")
 public class StepCaDaoImpl implements StepCaDao {
 
-    private static final Logger log = Logger.getLogger(StepAbDaoImpl.class);
+    private static final Logger log = Logger.getLogger(StepCaDaoImpl.class);
 
     @Resource
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;

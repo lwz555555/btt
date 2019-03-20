@@ -15,7 +15,7 @@ import java.util.Map;
 @RequestMapping("/stepbd")
 public class StepBdController {
 
-    private static final Logger log = Logger.getLogger(StepBaController.class);
+    private static final Logger log = Logger.getLogger(StepBdController.class);
 
     @Resource(name = "stepBdService")
     private StepBdService stepBdService;

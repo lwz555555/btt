@@ -14,7 +14,7 @@ import java.sql.SQLException;
 @RequestMapping("/stepcb")
 public class StepCbController {
 
-    private static final Logger log = Logger.getLogger(StepBaController.class);
+    private static final Logger log = Logger.getLogger(StepCbController.class);
 
     @Resource(name = "stepCbService")
     private StepCbService stepCbService;
