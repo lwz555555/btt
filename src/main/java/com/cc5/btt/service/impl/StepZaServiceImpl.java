@@ -13,15 +13,15 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service("stepZaService")
 public class StepZaServiceImpl implements StepZaService {
 
-    private static final Logger log = Logger.getLogger(StepAbServiceImpl.class);
-
-    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final Logger log = Logger.getLogger(StepZaServiceImpl.class);
 
     @Resource(name = "stepZaDao")
     private StepZaDao stepZaDao;
@@ -30,15 +30,15 @@ public class StepZaServiceImpl implements StepZaService {
     public int processStepZa(int userId) throws SQLException {
         List<StepZA> beanList = new ArrayList<>();
         Map<Integer, List<StepZA>> unionMapList = new HashMap<>();
-        log.info(df.format(new Date()) + "-----Start Step ZA : joinExtendsimAndCb.");
+        log.info("-----Step ZA : Start joinExtendsimAndCb.-----");
         Map<Integer, List<StepZA>> extendsimAndCb = joinExtendsimAndCb(userId);
-        log.info(df.format(new Date()) + "-----Start Step ZA : joinProdInfoMasterForModelling.");
+        log.info("-----Step ZA : Start joinProdInfoMasterForModelling.-----");
         Map<Integer, Map<String, List<StepZA>>> joinProdInfo = joinProdInfoMasterForModelling(extendsimAndCb);
-        log.info(df.format(new Date()) + "-----Start Step ZA : getCoreSize.");
+        log.info("-----Step ZA : Start getCoreSize.-----");
         Map<String, List<CoreSize>> coreSizeMap = stepZaDao.getCoreSize();
         List<CoreSize> appCoreSizeList = coreSizeMap.get(BTTConstants.app);
         List<CoreSize> appNoneCoreSizeList = coreSizeMap.get(BTTConstants.others);
-        log.info(df.format(new Date()) + "-----Start Step ZA : union.");
+        log.info("-----Step ZA : Start union.-----");
         for (Map.Entry<Integer, Map<String, List<StepZA>>> mapEntry : joinProdInfo.entrySet()){
             List<StepZA> unionList = new ArrayList<>();
             List<StepZA> appList = mapEntry.getValue().get(BTTConstants.app);
@@ -51,7 +51,7 @@ public class StepZaServiceImpl implements StepZaService {
             unionMapList.put(mapEntry.getKey(), lastWashForList(unionList));
             beanList.addAll(unionList);
         }
-        log.info(df.format(new Date()) + "-----Start Step ZA : insert.");
+        log.info("-----Step ZA : Start insert.-----");
         if (insert(userId,beanList).get("result").equals("success")){
             return 1;
         }

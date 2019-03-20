@@ -22,7 +22,7 @@ import java.util.Map;
 @Repository("stepZaDao")
 public class StepZaDaoImpl implements StepZaDao {
 
-    private static final Logger log = Logger.getLogger(StepAbDaoImpl.class);
+    private static final Logger log = Logger.getLogger(StepZaDaoImpl.class);
 
     @Resource
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
