@@ -2,6 +2,7 @@ package com.cc5.btt.dao.impl;
 
 import com.cc5.btt.dao.StepZcDao;
 import com.cc5.btt.entity.StepZC;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -24,23 +25,21 @@ public class StepZcDaoImpl implements StepZcDao {
 
     @Override
     public Map<Integer, List<String>> getCaData(int userId) {
-        String sql = "SELECT pos_id, REPLACE(LEFT(`value`,10),\"_\",\"-\") `value` \n" +
-                "FROM dim_step_ca WHERE `name`=\"Name\" GROUP BY pos_id, `value`";
+        String sql = "SELECT DISTINCT(REPLACE(LEFT(`value`,10),\"_\",\"-\")) `value`, pos_id " +
+                "FROM dim_step_ca WHERE user_id = :userId AND " +
+                "`name`=\"Name\" GROUP BY pos_id, `value` ";
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
                 .addValue("userId", userId);
         Map<Integer, List<String>> result = new HashMap<>();
         return namedParameterJdbcTemplate.query(sql, sqlParameterSource, rs -> {
             while (rs.next()){
                 int posId = rs.getInt("pos_id");
+                String value = StringUtils.isBlank(rs.getString("value")) ? "FileName" : rs.getString("value");
                 if (result.containsKey(posId)){
-                    if (result.get(posId).contains(rs.getString("value"))){
-                        continue;
-                    }else {
-                        result.get(posId).add(rs.getString("value"));
-                    }
+                    result.get(posId).add(value);
                 }else {
                     List<String> list = new ArrayList<>();
-                    list.add(rs.getString("value"));
+                    list.add(value);
                     result.put(posId, list);
                 }
             }

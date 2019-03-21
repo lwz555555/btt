@@ -69,11 +69,11 @@ public class StepZcServiceImpl implements StepZcService {
                                  List<StepZC> prodInfoMasterForModelling,
                                  Map<Integer, List<String>> leftMatlNbr,
                                  Map<Integer, List<StepZC>> joinMatlNbr){
-        for (Map.Entry<Integer, List<String>> namesEntry : names.entrySet()){
+        for (Integer posId : names.keySet()){
             List<String> nameList = new ArrayList<>();
-            nameList.addAll(namesEntry.getValue());
+            nameList.addAll(names.get(posId));
             List<StepZC> zcList = new ArrayList<>();
-            for (String name : namesEntry.getValue()){
+            for (String name : names.get(posId)){
                 for (StepZC zc : prodInfoMasterForModelling){
                     if (name == null || name.length() <= 0){
                         if (zc.getName() == null || zc.getName().length() <= 0){
@@ -84,14 +84,19 @@ public class StepZcServiceImpl implements StepZcService {
                     }else {
                         if (name.equals(zc.getName())){
                             nameList.remove(name);
-                            zc.setPosId(namesEntry.getKey());
-                            zcList.add(zc);
+                            StepZC newZc = new StepZC();
+                            newZc.setPosId(posId);
+                            newZc.setName(zc.getName());
+                            newZc.setProdEngnDesc(zc.getProdEngnDesc());
+                            newZc.setItemCategory(zc.getItemCategory());
+                            newZc.setRegMsrp(zc.getRegMsrp());
+                            zcList.add(newZc);
                         }
                     }
                 }
             }
-            leftMatlNbr.put(namesEntry.getKey(), nameList);
-            joinMatlNbr.put(namesEntry.getKey(), zcList);
+            leftMatlNbr.put(posId, nameList);
+            joinMatlNbr.put(posId, zcList);
         }
     }
 
